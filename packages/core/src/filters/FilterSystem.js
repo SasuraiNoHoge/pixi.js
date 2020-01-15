@@ -193,6 +193,7 @@ export class FilterSystem extends System
             inputSize: new Float32Array(4),
             inputPixel: new Float32Array(4),
             inputClamp: new Float32Array(4),
+            objectClamp: new Float32Array(4),
             resolution: 1,
 
             // legacy variables
@@ -271,19 +272,12 @@ export class FilterSystem extends System
 
         inputClamp[0] = 0.5 * inputPixel[2];
         inputClamp[1] = 0.5 * inputPixel[3];
-        inputClamp[2] = (state.sourceFrame.width * inputSize[2]) - (0.5 * inputPixel[2]);
-        inputClamp[3] = (state.sourceFrame.height * inputSize[3]) - (0.5 * inputPixel[3]);
 
         // only update the rect if its legacy..
         if (state.legacy)
         {
-            const filterArea = globalUniforms.filterArea;
-
-            filterArea[0] = state.destinationFrame.width;
-            filterArea[1] = state.destinationFrame.height;
-            filterArea[2] = state.sourceFrame.x;
-            filterArea[3] = state.sourceFrame.y;
-
+            globalUniforms.filterArea[0] = state.destinationFrame.width;
+            globalUniforms.filterArea[1] = state.destinationFrame.height;
             globalUniforms.filterClamp = globalUniforms.inputClamp;
         }
 
@@ -312,8 +306,7 @@ export class FilterSystem extends System
 
             for (i = 0; i < filters.length - 1; ++i)
             {
-                globalUniforms.inputRect = state.filterPass.inputRect;
-                globalUniforms.outputRect = state.filterPass.outputRect;
+                this.applyUniforms(state);
                 filters[i].apply(this, flip, flop, true, state);
                 ++state.passIndex;
 
@@ -453,8 +446,48 @@ export class FilterSystem extends System
         }
     }
 
-    applyUniforms()
-    {//eslint-disable-line
+    /**
+     * Applies the global-uniforms to be passed to the current filter for the given
+     * state.
+     *
+     * @param {PIXI.FilterState} state
+     * @private
+     */
+    applyUniforms(state)
+    {
+        const {
+            inputSize,
+            inputPixel,
+            inputClamp,
+            objectClamp,
+        } = this.globalUniforms.uniforms;
+
+        const {
+            inputRect,
+            outputRect,
+        } = state.filterPass;
+
+        const globalUniforms = this.globalUniforms.uniforms;
+        const targetBounds = state.target.getBounds(true);
+
+        inputClamp[2] = (inputRect.width * inputSize[2]) - (0.5 * inputPixel[2]);
+        inputClamp[3] = (inputRect.height * inputSize[3]) - (0.5 * inputPixel[3]);
+
+        objectClamp[0] = (Math.floor(targetBounds.left - inputRect.left) + 0.5) * inputPixel[2];
+        objectClamp[1] = (Math.floor(targetBounds.top - inputRect.top) + 0.5) * inputPixel[3];
+        objectClamp[2] = (Math.ceil(inputRect.width - inputRect.right + targetBounds.right) - 0.5) * inputPixel[2];
+        objectClamp[3] = (Math.ceil(inputRect.height - inputRect.bottom + targetBounds.bottom) - 0.5) * inputPixel[3];
+
+        globalUniforms.inputRect = inputRect;
+        globalUniforms.outputRect = outputRect;
+
+        if (state.legacy) // Should we remove this condition? Some filters use this feature anyways.
+        {
+            globalUniforms.filterArea[2] = outputRect.x;
+            globalUniforms.filterArea[3] = outputRect.y;
+        }
+
+        this.globalUniforms.update();
     }
 
     /**
