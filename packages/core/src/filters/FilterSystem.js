@@ -367,7 +367,7 @@ export class FilterSystem extends System
             state.sourceFrame.fit(this.renderer.renderTexture.sourceFrame);
         }
 
-        state.sourceFrame.ceil();
+        state.sourceFrame.ceil(resolution);
 
         const { sourceFrame } = state;
         let filterPassRect = sourceFrame;
@@ -451,6 +451,10 @@ export class FilterSystem extends System
             renderer.geometry.bind(this.quad);
             renderer.geometry.draw(DRAW_MODES.TRIANGLE_STRIP);
         }
+    }
+
+    applyUniforms()
+    {//eslint-disable-line
     }
 
     /**
