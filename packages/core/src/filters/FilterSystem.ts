@@ -4,81 +4,12 @@ import { Quad } from '../utils/Quad';
 import { QuadUv } from '../utils/QuadUv';
 import { Rectangle, Matrix } from '@pixi/math';
 import { UniformGroup } from '../shader/UniformGroup';
-import { DRAW_MODES, CLEAR_MODES } from '@pixi/constants';
-import { deprecation } from '@pixi/utils';
+import { DRAW_MODES } from '@pixi/constants';
 
-/**
- * System plugin to the renderer to manage filter states.
- *
- * @class
- * @private
- */
-class FilterState
-{
-    constructor()
-    {
-        this.renderTexture = null;
-
-        /**
-         * Target of the filters
-         * We store for case when custom filter wants to know the element it was applied on
-         * @member {PIXI.DisplayObject}
-         * @private
-         */
-        this.target = null;
-
-        /**
-         * Compatibility with PixiJS v4 filters
-         * @member {boolean}
-         * @default false
-         * @private
-         */
-        this.legacy = false;
-
-        /**
-         * Resolution of filters
-         * @member {number}
-         * @default 1
-         * @private
-         */
-        this.resolution = 1;
-
-        // next three fields are created only for root
-        // re-assigned for everything else
-
-        /**
-         * Source frame
-         * @member {PIXI.Rectangle}
-         * @private
-         */
-        this.sourceFrame = new Rectangle();
-
-        /**
-         * Destination frame
-         * @member {PIXI.Rectangle}
-         * @private
-         */
-        this.destinationFrame = new Rectangle();
-
-        /**
-         * Collection of filters
-         * @member {PIXI.Filter[]}
-         * @private
-         */
-        this.filters = [];
-    }
-
-    /**
-     * clears the state
-     * @private
-     */
-    clear()
-    {
-        this.target = null;
-        this.filters = null;
-        this.renderTexture = null;
-    }
-}
+import { FilterState } from './FilterState';
+import { Filter } from './Filter';
+import { IFilterTarget } from './IFilterTarget';
+import {Renderer, RenderTexture, ISpriteMaskTarget} from "@pixi/core";
 
 /**
  * System plugin to the renderer to manage the filters.
@@ -89,10 +20,19 @@ class FilterState
  */
 export class FilterSystem extends System
 {
+    defaultFilterStack: Array<FilterState>;
+    statePool: Array<FilterState>;
+    texturePool: RenderTexturePool;
+    quad: Quad;
+    quadUv: QuadUv;
+    private tempRect: Rectangle;
+    activeState: FilterState;
+    globalUniforms: UniformGroup;
+
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -101,7 +41,7 @@ export class FilterSystem extends System
          * @member {Object[]}
          * @readonly
          */
-        this.defaultFilterStack = [{}];
+        this.defaultFilterStack = [{}] as any;
 
         /**
          * stores a bunch of PO2 textures used for filtering
@@ -139,7 +79,7 @@ export class FilterSystem extends System
          * Active state
          * @member {object}
          */
-        this.activeState = {};
+        this.activeState = {} as any;
 
         /**
          * This uniform group is attached to filter uniforms when used
@@ -163,15 +103,6 @@ export class FilterSystem extends System
             filterArea: new Float32Array(4),
             filterClamp: new Float32Array(4),
         }, true);
-
-        this._pixelsWidth = renderer.view.width;
-        this._pixelsHeight = renderer.view.height;
-
-        /**
-         * Whether to clear output renderTexture in AUTO/BLIT mode. See {@link PIXI.CLEAR_MODES}
-         * @member {boolean}
-         */
-        this.forceClear = false;
     }
 
     /**
@@ -180,7 +111,7 @@ export class FilterSystem extends System
      * @param {PIXI.DisplayObject} target - The target of the filter to render.
      * @param {PIXI.Filter[]} filters - The filters to apply.
      */
-    push(target, filters)
+    push(target: IFilterTarget, filters: Array<Filter>)
     {
         const renderer = this.renderer;
         const filterStack = this.defaultFilterStack;
@@ -334,40 +265,25 @@ export class FilterSystem extends System
     }
 
     /**
-     * Binds a renderTexture with corresponding `filterFrame`, clears it if mode corresponds.
-     * @param {PIXI.RenderTexture} filterTexture renderTexture to bind, should belong to filter pool or filter stack
-     * @param {PIXI.CLEAR_MODES} [clearMode] clearMode, by default its CLEAR/YES. See {@link PIXI.CLEAR_MODES}
-     */
-    bindAndClear(filterTexture, clearMode = CLEAR_MODES.CLEAR)
-    {
-        this.renderer.renderTexture.bind(filterTexture, filterTexture ? filterTexture.filterFrame : null);
-        // TODO: remove in next major version
-        if (typeof clearMode === 'boolean')
-        {
-            clearMode = clearMode ? CLEAR_MODES.CLEAR : CLEAR_MODES.BLEND;
-            // get deprecation function from utils
-            deprecation('5.2.1', 'Use CLEAR_MODES when using clear applyFilter option');
-        }
-        if (clearMode === CLEAR_MODES.CLEAR
-            || (clearMode === CLEAR_MODES.BLIT && this.forceClear))
-        {
-            this.renderer.renderTexture.clear();
-        }
-    }
-
-    /**
      * Draws a filter.
      *
      * @param {PIXI.Filter} filter - The filter to draw.
      * @param {PIXI.RenderTexture} input - The input render target.
      * @param {PIXI.RenderTexture} output - The target to output to.
-     * @param {PIXI.CLEAR_MODES} [clear] - Should the output be cleared before rendering to it
+     * @param {boolean} clear - Should the output be cleared before rendering to it
      */
-    applyFilter(filter, input, output, clearMode = CLEAR_MODES.CLEAR)
+    applyFilter(filter: Filter, input: RenderTexture, output: RenderTexture, clear: boolean)
     {
         const renderer = this.renderer;
 
-        this.bindAndClear(output, clearMode);
+        renderer.renderTexture.bind(output, output ? output.filterFrame : null);
+
+        if (clear)
+        {
+            // gl.disable(gl.SCISSOR_TEST);
+            renderer.renderTexture.clear();
+            // gl.enable(gl.SCISSOR_TEST);
+        }
 
         // set the uniforms..
         filter.uniforms.uSampler = input;
@@ -403,7 +319,7 @@ export class FilterSystem extends System
      * @param {PIXI.Sprite} sprite - The sprite to map to.
      * @return {PIXI.Matrix} The mapped matrix.
      */
-    calculateSpriteMatrix(outputMatrix, sprite)
+    calculateSpriteMatrix(outputMatrix: Matrix, sprite: ISpriteMaskTarget)
     {
         const { sourceFrame, destinationFrame } = this.activeState;
         const { orig } = sprite._texture;
@@ -437,7 +353,7 @@ export class FilterSystem extends System
      * @param {number} [resolution=1] - The resolution of the render texture.
      * @return {PIXI.RenderTexture} The new render texture.
      */
-    getOptimalFilterTexture(minWidth, minHeight, resolution = 1)
+    getOptimalFilterTexture(minWidth: number, minHeight: number, resolution = 1)
     {
         return this.texturePool.getOptimalTexture(minWidth, minHeight, resolution);
     }
@@ -450,13 +366,13 @@ export class FilterSystem extends System
      * @param {number} [resolution] override resolution of the renderTexture
      * @returns {PIXI.RenderTexture}
      */
-    getFilterTexture(input, resolution)
+    getFilterTexture(input: RenderTexture, resolution: number)
     {
         if (typeof input === 'number')
         {
             const swap = input;
 
-            input = resolution;
+            input = resolution as any;
             resolution = swap;
         }
 
@@ -474,7 +390,7 @@ export class FilterSystem extends System
      *
      * @param {PIXI.RenderTexture} renderTexture - The renderTarget to free
      */
-    returnFilterTexture(renderTexture)
+    returnFilterTexture(renderTexture: RenderTexture)
     {
         this.texturePool.returnTexture(renderTexture);
     }

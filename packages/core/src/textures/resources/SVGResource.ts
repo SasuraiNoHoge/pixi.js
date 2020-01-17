@@ -1,6 +1,15 @@
 import { uid } from '@pixi/utils';
 import { BaseImageResource } from './BaseImageResource';
 
+export interface ISVGResourceOptions
+{
+    source?: string;
+    scale?: number;
+    width?: number;
+    height?: number;
+    autoLoad?: boolean;
+    crossorigin?: boolean|string;
+}
 /**
  * Resource type for SVG elements and graphics.
  * @class
@@ -15,7 +24,15 @@ import { BaseImageResource } from './BaseImageResource';
  */
 export class SVGResource extends BaseImageResource
 {
-    constructor(source, options)
+    readonly svg: string;
+    readonly scale: number;
+    readonly _overrideWidth: number;
+    readonly _overrideHeight: number;
+    private _resolve: Function;
+    private _load: Promise<void>;
+    private _crossorigin?: boolean|string;
+
+    constructor(sourceBase64: string, options: ISVGResourceOptions)
     {
         options = options || {};
 
@@ -28,7 +45,7 @@ export class SVGResource extends BaseImageResource
          * @readonly
          * @member {string}
          */
-        this.svg = source;
+        this.svg = sourceBase64;
 
         /**
          * The source scale to apply when rasterizing on load
@@ -89,10 +106,10 @@ export class SVGResource extends BaseImageResource
         this._load = new Promise((resolve) =>
         {
             // Save this until after load is finished
-            this._resolve = () =>
+            this._resolve = (): void =>
             {
                 this.resize(this.source.width, this.source.height);
-                resolve(this);
+                resolve();
             };
 
             // Convert SVG inline string to data-uri
@@ -102,7 +119,7 @@ export class SVGResource extends BaseImageResource
                 {
                     throw new Error('Your browser doesn\'t support base64 conversions.');
                 }
-                this.svg = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(this.svg)))}`;
+                (this as any).svg = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(this.svg)))}`;
             }
 
             this._loadSvg();
@@ -129,7 +146,7 @@ export class SVGResource extends BaseImageResource
             this.onError.run(event);
         };
 
-        tempImage.onload = () =>
+        tempImage.onload = (): void =>
         {
             const svgWidth = tempImage.width;
             const svgHeight = tempImage.height;
@@ -152,11 +169,11 @@ export class SVGResource extends BaseImageResource
             height = Math.round(height);
 
             // Create a canvas element
-            const canvas = this.source;
+            const canvas = this.source as HTMLCanvasElement;
 
             canvas.width = width;
             canvas.height = height;
-            canvas._pixiId = `canvas_${uid()}`;
+            (canvas as any)._pixiId = `canvas_${uid()}`;
 
             // Draw the Svg to the canvas
             canvas
@@ -175,10 +192,10 @@ export class SVGResource extends BaseImageResource
      * @param {string} svgString - a serialized svg element
      * @return {PIXI.ISize} image extension
      */
-    static getSize(svgString)
+    static getSize(svgString?: string)
     {
         const sizeMatch = SVGResource.SVG_SIZE.exec(svgString);
-        const size = {};
+        const size: any = {};
 
         if (sizeMatch)
         {
@@ -207,7 +224,7 @@ export class SVGResource extends BaseImageResource
      * @param {*} source - The source object
      * @param {string} extension - The extension of source, if set
      */
-    static test(source, extension)
+    static test(source: any, extension?: string)
     {
         // url file extension is SVG
         return extension === 'svg'
@@ -216,14 +233,14 @@ export class SVGResource extends BaseImageResource
             // source is SVG inline
             || (typeof source === 'string' && source.indexOf('<svg') === 0);
     }
-}
 
-/**
- * RegExp for SVG size.
- *
- * @static
- * @constant {RegExp|string} SVG_SIZE
- * @memberof PIXI.resources.SVGResource
- * @example &lt;svg width="100" height="100"&gt;&lt;/svg&gt;
- */
-SVGResource.SVG_SIZE = /<svg[^>]*(?:\s(width|height)=('|")(\d*(?:\.\d+)?)(?:px)?('|"))[^>]*(?:\s(width|height)=('|")(\d*(?:\.\d+)?)(?:px)?('|"))[^>]*>/i; // eslint-disable-line max-len
+    /**
+     * RegExp for SVG size.
+     *
+     * @static
+     * @constant {RegExp|string} SVG_SIZE
+     * @memberof PIXI.resources.SVGResource
+     * @example &lt;svg width="100" height="100"&gt;&lt;/svg&gt;
+     */
+    static SVG_SIZE = /<svg[^>]*(?:\s(width|height)=('|")(\d*(?:\.\d+)?)(?:px)?('|"))[^>]*(?:\s(width|height)=('|")(\d*(?:\.\d+)?)(?:px)?('|"))[^>]*>/i; // eslint-disable-line max-len
+}

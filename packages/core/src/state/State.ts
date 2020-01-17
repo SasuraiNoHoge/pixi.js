@@ -19,6 +19,10 @@ const WINDING = 4;
  */
 export class State
 {
+    data: number;
+    _blendMode: BLEND_MODES;
+    _polygonOffset: number;
+
     constructor()
     {
         this.data = 0;

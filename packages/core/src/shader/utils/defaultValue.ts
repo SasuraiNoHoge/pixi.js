@@ -5,7 +5,7 @@
  * @param size {Number}
  * @private
  */
-export function defaultValue(type, size)
+export function defaultValue(type: string, size: number): any
 {
     switch (type)
     {
@@ -67,7 +67,7 @@ export function defaultValue(type, size)
     return null;
 }
 
-function booleanArray(size)
+function booleanArray(size: number)
 {
     const array = new Array(size);
 

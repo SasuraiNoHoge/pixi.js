@@ -1,4 +1,4 @@
-import { BaseTexture } from '../textures/BaseTexture';
+import {BaseTexture, IBaseTextureOptions} from '../textures/BaseTexture';
 import { Framebuffer } from '../framebuffer/Framebuffer';
 
 /**
@@ -43,6 +43,11 @@ import { Framebuffer } from '../framebuffer/Framebuffer';
  */
 export class BaseRenderTexture extends BaseTexture
 {
+    protected _canvasRenderTarget: any;
+    clearColor: number[];
+    framebuffer: Framebuffer;
+    maskStack: Array<any>;
+    filterStack: Array<any>;
     /**
      * @param {object} [options]
      * @param {number} [options.width=100] - The width of the base render texture.
@@ -50,7 +55,7 @@ export class BaseRenderTexture extends BaseTexture
      * @param {PIXI.SCALE_MODES} [options.scaleMode] - See {@link PIXI.SCALE_MODES} for possible values.
      * @param {number} [options.resolution=1] - The resolution / device pixel ratio of the texture being generated.
      */
-    constructor(options)
+    constructor(options: IBaseTextureOptions)
     {
         if (typeof options === 'number')
         {
@@ -70,10 +75,10 @@ export class BaseRenderTexture extends BaseTexture
         const { width, height } = options || {};
 
         // Set defaults
-        this.mipmap = false;
-        this.width = Math.ceil(width) || 100;
-        this.height = Math.ceil(height) || 100;
-        this.valid = true;
+        this.mipmap = 0;
+        (this as any).width = Math.ceil(width) || 100;
+        (this as any).height = Math.ceil(height) || 100;
+        (this as any).valid = true;
 
         /**
          * A reference to the canvas render target (we only need one as this can be shared across renderers)
@@ -111,7 +116,7 @@ export class BaseRenderTexture extends BaseTexture
      * @param {number} width - The width to resize to.
      * @param {number} height - The height to resize to.
      */
-    resize(width, height)
+    resize(width: number, height: number)
     {
         width = Math.ceil(width);
         height = Math.ceil(height);
@@ -138,7 +143,7 @@ export class BaseRenderTexture extends BaseTexture
      */
     destroy()
     {
-        super.destroy(true);
+        super.destroy();
 
         this.framebuffer = null;
     }

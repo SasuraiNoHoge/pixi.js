@@ -1,5 +1,7 @@
 import { AbstractMaskSystem } from './AbstractMaskSystem';
 
+import { Renderer } from '@pixi/core';
+import { IMaskTarget, MaskData } from './MaskData';
 /**
  * System plugin to the renderer to manage stencils (used for masks).
  *
@@ -12,7 +14,7 @@ export class StencilSystem extends AbstractMaskSystem
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -36,7 +38,7 @@ export class StencilSystem extends AbstractMaskSystem
      *
      * @param {PIXI.MaskData} maskData - The mask data
      */
-    push(maskData)
+    push(maskData: MaskData)
     {
         const maskObject = maskData.maskObject;
         const { gl } = this.renderer;
@@ -69,7 +71,7 @@ export class StencilSystem extends AbstractMaskSystem
      *
      * @param {PIXI.DisplayObject} maskObject - object of popped mask data
      */
-    pop(maskObject)
+    pop(maskObject: IMaskTarget)
     {
         const gl = this.renderer.gl;
 

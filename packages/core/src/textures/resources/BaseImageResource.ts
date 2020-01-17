@@ -2,6 +2,10 @@ import { Resource } from './Resource';
 import { determineCrossOrigin } from '@pixi/utils';
 import { ALPHA_MODES } from '@pixi/constants';
 
+import { BaseTexture, Renderer, GLTexture } from '@pixi/core';
+
+export type ImageSource = HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|ImageBitmap;
+
 /**
  * Base for all the image/canvas resources
  * @class
@@ -10,13 +14,17 @@ import { ALPHA_MODES } from '@pixi/constants';
  */
 export class BaseImageResource extends Resource
 {
+    source: ImageSource;
+    noSubImage: boolean;
+
     /**
      * @param {HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|SVGElement} source
      */
-    constructor(source)
+    constructor(source: ImageSource)
     {
-        const width = source.naturalWidth || source.videoWidth || source.width;
-        const height = source.naturalHeight || source.videoHeight || source.height;
+        const sourceAny = source as any;
+        const width = sourceAny.naturalWidth || sourceAny.videoWidth || sourceAny.width;
+        const height = sourceAny.naturalHeight || sourceAny.videoHeight || sourceAny.height;
 
         super(width, height);
 
@@ -44,7 +52,7 @@ export class BaseImageResource extends Resource
      * @param {string} url - URL to check
      * @param {boolean|string} [crossorigin=true] - Cross origin value to use
      */
-    static crossOrigin(element, url, crossorigin)
+    static crossOrigin(element: HTMLImageElement|HTMLVideoElement, url: string, crossorigin: boolean|string)
     {
         if (crossorigin === undefined && url.indexOf('data:') !== 0)
         {
@@ -64,7 +72,7 @@ export class BaseImageResource extends Resource
      * @param {HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|SVGElement} [source] (optional)
      * @returns {boolean} true is success
      */
-    upload(renderer, baseTexture, glTexture, source)
+    upload(renderer: Renderer, baseTexture: BaseTexture, glTexture: GLTexture, source?: ImageSource): boolean
     {
         const gl = renderer.gl;
         const width = baseTexture.realWidth;
@@ -103,8 +111,10 @@ export class BaseImageResource extends Resource
             return;
         }
 
-        const width = this.source.naturalWidth || this.source.videoWidth || this.source.width;
-        const height = this.source.naturalHeight || this.source.videoHeight || this.source.height;
+        const source = this.source as any;
+
+        const width = source.naturalWidth || source.videoWidth || source.width;
+        const height = source.naturalHeight || source.videoHeight || source.height;
 
         this.resize(width, height);
 

@@ -9,11 +9,13 @@ import { UniformGroup } from './UniformGroup';
  */
 export class Shader
 {
+    program: Program;
+    uniformGroup: UniformGroup;
     /**
      * @param {PIXI.Program} [program] - The program the shader will use.
      * @param {object} [uniforms] - Custom uniforms to use to augment the built-in ones.
      */
-    constructor(program, uniforms)
+    constructor(program: Program, uniforms: any)
     {
         /**
          * Program that the shader uses
@@ -53,7 +55,7 @@ export class Shader
     }
 
     // TODO move to shader system..
-    checkUniformExists(name, group)
+    checkUniformExists(name: string, group: UniformGroup)
     {
         if (group.uniforms[name])
         {
@@ -102,7 +104,7 @@ export class Shader
      *
      * @returns {PIXI.Shader} an shiny new Pixi shader!
      */
-    static from(vertexSrc, fragmentSrc, uniforms)
+    static from(vertexSrc?: string, fragmentSrc?: string, uniforms?: any)
     {
         const program = Program.from(vertexSrc, fragmentSrc);
 

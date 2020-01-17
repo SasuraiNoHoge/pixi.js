@@ -1,5 +1,7 @@
 import { System } from '../System';
-import { Matrix } from '@pixi/math';
+import { Rectangle, Matrix } from '@pixi/math';
+
+import { Renderer } from '@pixi/core';
 
 /**
  * System plugin to the renderer to manage the projection matrix.
@@ -11,10 +13,15 @@ import { Matrix } from '@pixi/math';
 
 export class ProjectionSystem extends System
 {
+    destinationFrame: Rectangle;
+    sourceFrame: Rectangle;
+    defaultFrame: Rectangle;
+    projectionMatrix: Matrix;
+    transform: Matrix;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -62,7 +69,7 @@ export class ProjectionSystem extends System
      * @param {Number} resolution - Resolution
      * @param {boolean} root - If is root
      */
-    update(destinationFrame, sourceFrame, resolution, root)
+    update(destinationFrame: Rectangle, sourceFrame: Rectangle, resolution: number, root: boolean)
     {
         this.destinationFrame = destinationFrame || this.destinationFrame || this.defaultFrame;
         this.sourceFrame = sourceFrame || this.sourceFrame || destinationFrame;
@@ -95,7 +102,7 @@ export class ProjectionSystem extends System
      * @param {Number} resolution - Resolution
      * @param {boolean} root - If is root
      */
-    calculateProjection(destinationFrame, sourceFrame, resolution, root)
+    calculateProjection(destinationFrame: Rectangle, sourceFrame: Rectangle, resolution: number, root: boolean)
     {
         const pm = this.projectionMatrix;
 

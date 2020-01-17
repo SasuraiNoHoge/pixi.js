@@ -1,6 +1,6 @@
-let GL_TABLE = null;
+let GL_TABLE: any = null;
 
-const GL_TO_GLSL_TYPES = {
+const GL_TO_GLSL_TYPES: any = {
     FLOAT:       'float',
     FLOAT_VEC2:  'vec2',
     FLOAT_VEC3:  'vec3',
@@ -25,7 +25,7 @@ const GL_TO_GLSL_TYPES = {
     SAMPLER_2D_ARRAY:  'sampler2DArray',
 };
 
-export function mapType(gl, type)
+export function mapType(gl: any, type: number)
 {
     if (!GL_TABLE)
     {

@@ -1,19 +1,19 @@
 import { defaultValue } from './defaultValue';
 
-export function extractUniformsFromSrc(vertexSrc, fragmentSrc, mask)
+export function extractUniformsFromSrc(vertexSrc: string, fragmentSrc: string)
 {
-    const vertUniforms = extractUniformsFromString(vertexSrc, mask);
-    const fragUniforms = extractUniformsFromString(fragmentSrc, mask);
+    const vertUniforms = extractUniformsFromString(vertexSrc);
+    const fragUniforms = extractUniformsFromString(fragmentSrc);
 
     return Object.assign(vertUniforms, fragUniforms);
 }
 
-function extractUniformsFromString(string)
+function extractUniformsFromString(string: string)
 {
     const maskRegex = new RegExp('^(projectionMatrix|uSampler|translationMatrix)$');
 
-    const uniforms = {};
-    let nameSplit;
+    const uniforms: any = {};
+    let nameSplit: Array<string>;
 
     // clean the lines a little - remove extra spaces, tabs, etc.
     // then split along ';'

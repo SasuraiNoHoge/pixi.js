@@ -1,5 +1,8 @@
 import { Resource } from './Resource';
+import { BaseImageResource } from './BaseImageResource';
 import { BaseTexture } from '../BaseTexture';
+import { Renderer } from '../../Renderer';
+import { GLTexture } from '../GLTexture';
 import { TARGETS } from '@pixi/constants';
 import { autoDetectResource } from './autoDetectResource';
 
@@ -17,17 +20,26 @@ import { autoDetectResource } from './autoDetectResource';
  */
 export class ArrayResource extends Resource
 {
-    constructor(source, options)
+    readonly length: number;
+    items: Array<BaseTexture>;
+    itemDirtyIds: Array<number>;
+    private _load: Promise<void>;
+
+    constructor(source: number|Array<any>, options?: any)
     {
         options = options || {};
 
         let urls;
-        let length = source;
+        let length: number;
 
         if (Array.isArray(source))
         {
             urls = source;
             length = source.length;
+        }
+        else
+        {
+            length = source;
         }
 
         super(options.width, options.height);
@@ -101,7 +113,7 @@ export class ArrayResource extends Resource
      * @param {number} index - Zero-based index of resource to set
      * @return {PIXI.resources.ArrayResource} Instance for chaining
      */
-    addResourceAt(resource, index)
+    addResourceAt(resource: Resource, index: number)
     {
         const baseTexture = this.items[index];
 
@@ -126,7 +138,7 @@ export class ArrayResource extends Resource
      * @member {PIXI.BaseTexture}
      * @override
      */
-    bind(baseTexture)
+    bind(baseTexture: BaseTexture)
     {
         super.bind(baseTexture);
 
@@ -143,7 +155,7 @@ export class ArrayResource extends Resource
      * @member {PIXI.BaseTexture}
      * @override
      */
-    unbind(baseTexture)
+    unbind(baseTexture: BaseTexture)
     {
         super.unbind(baseTexture);
 
@@ -177,7 +189,7 @@ export class ArrayResource extends Resource
 
                 this.resize(width, height);
 
-                return Promise.resolve(this);
+                return Promise.resolve();
             }
             );
 
@@ -191,7 +203,7 @@ export class ArrayResource extends Resource
      * @param {PIXI.GLTexture} glTexture
      * @returns {boolean} whether texture was uploaded
      */
-    upload(renderer, texture, glTexture)
+    upload(renderer: Renderer, texture: BaseTexture, glTexture: GLTexture): boolean
     {
         const { length, itemDirtyIds, items } = this;
         const { gl } = renderer;
@@ -232,7 +244,7 @@ export class ArrayResource extends Resource
                         1,
                         texture.format,
                         texture.type,
-                        item.resource.source
+                        (item.resource as BaseImageResource).source
                     );
                 }
             }

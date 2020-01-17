@@ -1,3 +1,4 @@
+import { Renderer } from './Renderer';
 /**
  * System is a base class used for extending systems used by the {@link PIXI.Renderer}
  *
@@ -7,10 +8,11 @@
  */
 export class System
 {
+    renderer: Renderer;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this manager works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         /**
          * The renderer this manager works for.

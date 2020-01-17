@@ -3,6 +3,8 @@ import { System } from '../System';
 import { State } from './State';
 import { BLEND_MODES } from '@pixi/constants';
 
+import { Renderer } from '@pixi/core';
+
 const BLEND = 0;
 const OFFSET = 1;
 const CULLING = 2;
@@ -18,10 +20,19 @@ const WINDING = 4;
  */
 export class StateSystem extends System
 {
+    gl: WebGL2RenderingContext;
+    stateId: number;
+    polygonOffset: number;
+    blendMode: BLEND_MODES;
+    protected _blendEq: boolean;
+    readonly map: Array<Function>;
+    readonly checks: Array<Function>;
+    readonly defaultState: State;
+    blendModes: number[][];
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -89,10 +100,9 @@ export class StateSystem extends System
          */
         this.defaultState = new State();
         this.defaultState.blend = true;
-        this.defaultState.depth = true;
     }
 
-    contextChange(gl)
+    contextChange(gl: WebGL2RenderingContext)
     {
         this.gl = gl;
 
@@ -108,7 +118,7 @@ export class StateSystem extends System
      *
      * @param {*} state - The state to set.
      */
-    set(state)
+    set(state: State)
     {
         state = state || this.defaultState;
 
@@ -148,7 +158,7 @@ export class StateSystem extends System
      *
      * @param {*} state - The state to set
      */
-    forceState(state)
+    forceState(state: State)
     {
         state = state || this.defaultState;
         for (let i = 0; i < this.map.length; i++)
@@ -168,7 +178,7 @@ export class StateSystem extends System
      *
      * @param {boolean} value - Turn on or off webgl blending.
      */
-    setBlend(value)
+    setBlend(value: boolean)
     {
         this.updateCheck(StateSystem.checkBlendMode, value);
 
@@ -180,7 +190,7 @@ export class StateSystem extends System
      *
      * @param {boolean} value - Turn on or off webgl polygon offset testing.
      */
-    setOffset(value)
+    setOffset(value: boolean)
     {
         this.updateCheck(StateSystem.checkPolygonOffset, value);
 
@@ -192,7 +202,7 @@ export class StateSystem extends System
      *
      * @param {boolean} value - Turn on or off webgl depth testing.
      */
-    setDepthTest(value)
+    setDepthTest(value: boolean)
     {
         this.gl[value ? 'enable' : 'disable'](this.gl.DEPTH_TEST);
     }
@@ -202,7 +212,7 @@ export class StateSystem extends System
      *
      * @param {boolean} value - Turn on or off webgl cull face.
      */
-    setCullFace(value)
+    setCullFace(value: boolean)
     {
         this.gl[value ? 'enable' : 'disable'](this.gl.CULL_FACE);
     }
@@ -212,7 +222,7 @@ export class StateSystem extends System
      *
      * @param {boolean} value - true is clockwise and false is counter-clockwise
      */
-    setFrontFace(value)
+    setFrontFace(value: boolean)
     {
         this.gl.frontFace(this.gl[value ? 'CW' : 'CCW']);
     }
@@ -222,7 +232,7 @@ export class StateSystem extends System
      *
      * @param {number} value - The blend mode to set to.
      */
-    setBlendMode(value)
+    setBlendMode(value: number)
     {
         if (value === this.blendMode)
         {
@@ -260,7 +270,7 @@ export class StateSystem extends System
      * @param {number} value - the polygon offset
      * @param {number} scale - the polygon offset scale
      */
-    setPolygonOffset(value, scale)
+    setPolygonOffset(value: number, scale: number)
     {
         this.gl.polygonOffset(value, scale);
     }
@@ -273,7 +283,7 @@ export class StateSystem extends System
     {
         this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, false);
 
-        this.forceState(0);
+        this.forceState(this.defaultState);
 
         this._blendEq = true;
         this.blendMode = -1;
@@ -289,7 +299,7 @@ export class StateSystem extends System
      * @param {Function} func  the checking function to add or remove
      * @param {boolean} value  should the check function be added or removed.
      */
-    updateCheck(func, value)
+    updateCheck(func: Function, value: boolean)
     {
         const index = this.checks.indexOf(func);
 
@@ -311,7 +321,7 @@ export class StateSystem extends System
      * @param {PIXI.StateSystem} System  the System to perform the state check on
      * @param {PIXI.State} state  the state that the blendMode will pulled from
      */
-    static checkBlendMode(system, state)
+    static checkBlendMode(system: StateSystem, state: State)
     {
         system.setBlendMode(state.blendMode);
     }
@@ -324,7 +334,7 @@ export class StateSystem extends System
      * @param {PIXI.StateSystem} System  the System to perform the state check on
      * @param {PIXI.State} state  the state that the blendMode will pulled from
      */
-    static checkPolygonOffset(system, state)
+    static checkPolygonOffset(system: StateSystem, state: State)
     {
         system.setPolygonOffset(state.polygonOffset, 0);
     }

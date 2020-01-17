@@ -2,7 +2,7 @@ import { settings } from '../../settings';
 import { ENV } from '@pixi/constants';
 
 const unknownContext = {};
-let context = unknownContext;
+let context: WebGL2RenderingContext = unknownContext as any;
 
 /**
  * returns a little WebGL context to use for program inspection.
@@ -11,13 +11,13 @@ let context = unknownContext;
  * @private
  * @returns {WebGLRenderingContext} a gl context to test with
  */
-export function getTestContext()
+export function getTestContext(): WebGL2RenderingContext
 {
     if (context === unknownContext || (context && context.isContextLost()))
     {
         const canvas = document.createElement('canvas');
 
-        let gl;
+        let gl: any;
 
         if (settings.PREFER_ENV >= ENV.WEBGL2)
         {

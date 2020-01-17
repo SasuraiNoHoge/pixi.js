@@ -1,5 +1,8 @@
 import { Resource } from './Resource';
 import { ALPHA_MODES } from '@pixi/constants';
+import { ISize } from '@pixi/math';
+
+import { BaseTexture, Renderer, GLTexture } from '@pixi/core';
 
 /**
  * @interface SharedArrayBuffer
@@ -13,13 +16,15 @@ import { ALPHA_MODES } from '@pixi/constants';
  */
 export class BufferResource extends Resource
 {
+    data: Float32Array|Uint8Array|Uint32Array;
+
     /**
      * @param {Float32Array|Uint8Array|Uint32Array} source - Source buffer
      * @param {object} options - Options
      * @param {number} options.width - Width of the texture
      * @param {number} options.height - Height of the texture
      */
-    constructor(source, options)
+    constructor(source: Float32Array|Uint8Array|Uint32Array, options: ISize)
     {
         const { width, height } = options || {};
 
@@ -46,7 +51,7 @@ export class BufferResource extends Resource
      * @param {PIXI.GLTexture} glTexture glTexture
      * @returns {boolean} true is success
      */
-    upload(renderer, baseTexture, glTexture)
+    upload(renderer: Renderer, baseTexture: BaseTexture, glTexture: GLTexture): boolean
     {
         const gl = renderer.gl;
 
@@ -103,7 +108,7 @@ export class BufferResource extends Resource
      * @param {*} source - The source object
      * @return {boolean} `true` if <canvas>
      */
-    static test(source)
+    static test(source: any): boolean
     {
         return source instanceof Float32Array
             || source instanceof Uint8Array

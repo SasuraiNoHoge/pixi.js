@@ -1,5 +1,17 @@
 import { MASK_TYPES } from '@pixi/constants';
 
+import { Rectangle, Matrix } from '@pixi/math';
+import { Renderer, IFilterTarget } from '@pixi/core';
+
+export interface IMaskTarget extends IFilterTarget
+{
+    renderable: boolean;
+    isSprite?: boolean;
+    worldTransform: Matrix;
+    isFastRect?() : boolean;
+    getBounds(skipUpdate?: boolean): Rectangle;
+    render(renderer: Renderer): void;
+}
 /**
  * Component for masked elements
  *
@@ -10,12 +22,22 @@ import { MASK_TYPES } from '@pixi/constants';
  */
 export class MaskData
 {
+    type: MASK_TYPES;
+    autoDetect: boolean;
+    maskObject: IMaskTarget;
+    pooled: boolean;
+    isMaskData: boolean;
+    _stencilCounter: number;
+    _scissorCounter: number;
+    _scissorRect: Rectangle;
+    _target: IMaskTarget;
+
     /**
      * Create MaskData
      *
      * @param {PIXI.DisplayObject} [maskObject=null] object that describes the mask
      */
-    constructor(maskObject)
+    constructor(maskObject: IMaskTarget = null)
     {
         /**
          * Mask type
@@ -97,7 +119,7 @@ export class MaskData
      * copies counters from maskData above, called from pushMask()
      * @param {PIXI.MaskData|null} maskAbove
      */
-    copyCountersOrReset(maskAbove)
+    copyCountersOrReset(maskAbove?: MaskData)
     {
         if (maskAbove)
         {

@@ -16,7 +16,7 @@ export class ImageBitmapResource extends BaseImageResource
      * @param {ImageBitmap} source - The source object
      * @return {boolean} `true` if source is an ImageBitmap
      */
-    static test(source)
+    static test(source: any): source is ImageBitmap
     {
         return !!window.createImageBitmap && source instanceof ImageBitmap;
     }

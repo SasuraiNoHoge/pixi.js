@@ -1,5 +1,7 @@
 import { AbstractMaskSystem } from './AbstractMaskSystem';
 
+import { Renderer } from '@pixi/core';
+import { MaskData } from './MaskData';
 /**
  * System plugin to the renderer to manage scissor rects (used for masks).
  *
@@ -9,10 +11,11 @@ import { AbstractMaskSystem } from './AbstractMaskSystem';
  */
 export class ScissorSystem extends AbstractMaskSystem
 {
+    glConst: number;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -36,7 +39,7 @@ export class ScissorSystem extends AbstractMaskSystem
      *
      * @param {PIXI.MaskData} maskData - The mask data
      */
-    push(maskData)
+    push(maskData: MaskData)
     {
         const maskObject = maskData.maskObject;
 

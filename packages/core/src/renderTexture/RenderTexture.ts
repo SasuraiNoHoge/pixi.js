@@ -1,5 +1,8 @@
 import { BaseRenderTexture } from './BaseRenderTexture';
 import { Texture } from '../textures/Texture';
+import { IBaseTextureOptions } from '../textures/BaseTexture';
+
+import { Rectangle } from '@pixi/math';
 
 /**
  * A RenderTexture is a special texture that allows any PixiJS display object to be rendered to it.
@@ -43,11 +46,14 @@ import { Texture } from '../textures/Texture';
  */
 export class RenderTexture extends Texture
 {
+    legacyRenderer: any;
+    filterFrame: Rectangle|null;
+    filterPoolKey: string|null;
     /**
      * @param {PIXI.BaseRenderTexture} baseRenderTexture - The base texture object that this texture uses
      * @param {PIXI.Rectangle} [frame] - The rectangle frame of the texture to show
      */
-    constructor(baseRenderTexture, frame)
+    constructor(baseRenderTexture: BaseRenderTexture, frame?: Rectangle)
     {
         // support for legacy..
         let _legacyRenderer = null;
@@ -116,7 +122,7 @@ export class RenderTexture extends Texture
      * @param {number} height - The height to resize to.
      * @param {boolean} [resizeBaseTexture=true] - Should the baseTexture.width and height values be resized as well?
      */
-    resize(width, height, resizeBaseTexture = true)
+    resize(width: number, height: number, resizeBaseTexture = true)
     {
         width = Math.ceil(width);
         height = Math.ceil(height);
@@ -129,7 +135,7 @@ export class RenderTexture extends Texture
 
         if (resizeBaseTexture)
         {
-            this.baseTexture.resize(width, height);
+            (this.baseTexture as BaseRenderTexture).resize(width, height);
         }
 
         this.updateUvs();
@@ -140,7 +146,7 @@ export class RenderTexture extends Texture
      *
      * @param {number} resolution - The new resolution to apply to RenderTexture
      */
-    setResolution(resolution)
+    setResolution(resolution: number)
     {
         const { baseTexture } = this;
 
@@ -163,7 +169,7 @@ export class RenderTexture extends Texture
      * @param {number} [options.resolution=1] - The resolution / device pixel ratio of the texture being generated
      * @return {PIXI.RenderTexture} The new render texture
      */
-    static create(options)
+    static create(options: IBaseTextureOptions)
     {
         // fallback, old-style: create(width, height, scaleMode, resolution)
         if (typeof options === 'number')

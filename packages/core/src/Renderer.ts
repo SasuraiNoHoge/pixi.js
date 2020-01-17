@@ -33,6 +33,29 @@ import { Runner } from '@pixi/runner';
  */
 export class Renderer extends AbstractRenderer
 {
+    gl: WebGL2RenderingContext;
+    globalUniforms: UniformGroup;
+    CONTEXT_UID: number;
+
+    //systems
+    mask: MaskSystem;
+    context: ContextSystem;
+    state: StateSystem;
+    shader: ShaderSystem;
+    texture: TextureSystem;
+    geometry: GeometrySystem;
+    framebuffer: FramebufferSystem;
+    scissor: ScissorSystem;
+    stencil: StencilSystem;
+    projection: ProjectionSystem;
+    textureGC: TextureGCSystem;
+    filter: FilterSystem;
+    renderTexture: RenderTextureSystem;
+    batch: BatchSystem;
+
+    resolution: number;
+    renderingToScreen: boolean;
+
     /**
      * Create renderer if WebGL is available. Overrideable
      * by the **@pixi/canvas-renderer** package to allow fallback.
@@ -40,7 +63,7 @@ export class Renderer extends AbstractRenderer
      * @static
      * @private
      */
-    static create(options)
+    static create(options: any)
     {
         if (isWebGLSupported())
         {
@@ -459,9 +482,9 @@ export class Renderer extends AbstractRenderer
      * @type {object}
      * @readonly
      * @property {PIXI.accessibility.AccessibilityManager} accessibility Support tabbing interactive elements.
-     * @property {PIXI.Extract} extract Extract image data from renderer.
+     * @property {PIXI.extract.Extract} extract Extract image data from renderer.
      * @property {PIXI.interaction.InteractionManager} interaction Handles mouse, touch and pointer events.
-     * @property {PIXI.Prepare} prepare Pre-render display objects.
+     * @property {PIXI.prepare.Prepare} prepare Pre-render display objects.
      */
 
     /**

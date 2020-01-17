@@ -1,4 +1,4 @@
-const GLSL_TO_SIZE = {
+const GLSL_TO_SIZE : any = {
     float:    1,
     vec2:     2,
     vec3:     3,
@@ -28,7 +28,7 @@ const GLSL_TO_SIZE = {
  * @param type {String}
  * @return {Number}
  */
-export function mapSize(type)
+export function mapSize(type: string)
 {
     return GLSL_TO_SIZE[type];
 }

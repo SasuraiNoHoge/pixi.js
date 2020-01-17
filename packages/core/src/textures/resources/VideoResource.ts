@@ -1,6 +1,20 @@
 import { BaseImageResource } from './BaseImageResource';
 import { Ticker } from '@pixi/ticker';
 
+interface IVideoResourceOptions
+{
+    autoLoad?: boolean;
+    autoPlay?: boolean;
+    updateFPS?: number;
+    crossorigin?: boolean|string;
+}
+
+interface IVideoResourceOptionsElement
+{
+    src: string;
+    mime: string;
+}
+
 /**
  * Resource type for HTMLVideoElement.
  * @class
@@ -16,7 +30,15 @@ import { Ticker } from '@pixi/ticker';
  */
 export class VideoResource extends BaseImageResource
 {
-    constructor(source, options)
+    protected _autoUpdate: boolean;
+    protected _isAutoUpdating: boolean;
+    protected _updateFPS: number;
+    protected _msToNextUpdate: number;
+    protected autoPlay: boolean;
+    private _load: Promise<void>;
+    private _resolve: Function;
+
+    constructor(source?: HTMLVideoElement|Array<string|IVideoResourceOptionsElement>|string, options?: IVideoResourceOptions)
     {
         options = options || {};
 
@@ -34,16 +56,18 @@ export class VideoResource extends BaseImageResource
                 source = [source];
             }
 
-            BaseImageResource.crossOrigin(videoElement, (source[0].src || source[0]), options.crossorigin);
+            const firstSrc = (source[0] as IVideoResourceOptionsElement).src || source[0] as string;
+
+            BaseImageResource.crossOrigin(videoElement, firstSrc, options.crossorigin);
 
             // array of objects or strings
             for (let i = 0; i < source.length; ++i)
             {
                 const sourceElement = document.createElement('source');
 
-                let { src, mime } = source[i];
+                let { src, mime } = source[i] as IVideoResourceOptionsElement;
 
-                src = src || source[i];
+                src = src || source[i] as string;
 
                 const baseSrc = src.split('?').shift().toLowerCase();
                 const ext = baseSrc.substr(baseSrc.lastIndexOf('.') + 1);
@@ -107,17 +131,19 @@ export class VideoResource extends BaseImageResource
      *
      * @param {number} [deltaTime=0] - time delta since last tick
      */
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
     update(deltaTime = 0)
     {
         if (!this.destroyed)
         {
             // account for if video has had its playbackRate changed
-            const elapsedMS = Ticker.shared.elapsedMS * this.source.playbackRate;
+            const elapsedMS = Ticker.shared.elapsedMS * (this.source as HTMLVideoElement).playbackRate;
 
             this._msToNextUpdate = Math.floor(this._msToNextUpdate - elapsedMS);
             if (!this._updateFPS || this._msToNextUpdate <= 0)
             {
-                super.update(deltaTime);
+                super.update(/*deltaTime*/);
                 this._msToNextUpdate = this._updateFPS ? Math.floor(1000 / this._updateFPS) : 0;
             }
         }
@@ -136,12 +162,12 @@ export class VideoResource extends BaseImageResource
             return this._load;
         }
 
-        const source = this.source;
+        const source = this.source as HTMLVideoElement;
 
         if ((source.readyState === source.HAVE_ENOUGH_DATA || source.readyState === source.HAVE_FUTURE_DATA)
             && source.width && source.height)
         {
-            source.complete = true;
+            (source as any).complete = true;
         }
 
         source.addEventListener('play', this._onPlayStart.bind(this));
@@ -162,7 +188,7 @@ export class VideoResource extends BaseImageResource
         {
             if (this.valid)
             {
-                resolve(this);
+                resolve();
             }
             else
             {
@@ -182,7 +208,7 @@ export class VideoResource extends BaseImageResource
      */
     _onError()
     {
-        this.source.removeEventListener('error', this._onError, true);
+        (this.source as HTMLVideoElement).removeEventListener('error', this._onError, true);
         this.onError.run(event);
     }
 
@@ -194,7 +220,7 @@ export class VideoResource extends BaseImageResource
      */
     _isSourcePlaying()
     {
-        const source = this.source;
+        const source = this.source as HTMLVideoElement;
 
         return (source.currentTime > 0 && source.paused === false && source.ended === false && source.readyState > 2);
     }
@@ -207,7 +233,9 @@ export class VideoResource extends BaseImageResource
      */
     _isSourceReady()
     {
-        return this.source.readyState === 3 || this.source.readyState === 4;
+        const source = this.source as HTMLVideoElement;
+
+        return source.readyState === 3 || source.readyState === 4;
     }
 
     /**
@@ -251,7 +279,7 @@ export class VideoResource extends BaseImageResource
      */
     _onCanPlay()
     {
-        const { source } = this;
+        const source = this.source as HTMLVideoElement;
 
         source.removeEventListener('canplay', this._onCanPlay);
         source.removeEventListener('canplaythrough', this._onCanPlay);
@@ -288,12 +316,14 @@ export class VideoResource extends BaseImageResource
             Ticker.shared.remove(this.update, this);
         }
 
-        if (this.source)
+        const source = this.source as HTMLVideoElement;
+
+        if (source)
         {
-            this.source.removeEventListener('error', this._onError, true);
-            this.source.pause();
-            this.source.src = '';
-            this.source.load();
+            source.removeEventListener('error', this._onError, true);
+            source.pause();
+            source.src = '';
+            source.load();
         }
         super.dispose();
     }
@@ -354,18 +384,18 @@ export class VideoResource extends BaseImageResource
      * @param {string} extension - The extension of source, if set
      * @return {boolean} `true` if video source
      */
-    static test(source, extension)
+    static test(source: any, extension?: string)
     {
         return (source instanceof HTMLVideoElement)
             || VideoResource.TYPES.indexOf(extension) > -1;
     }
-}
 
-/**
- * List of common video file extensions supported by VideoResource.
- * @constant
- * @member {Array<string>}
- * @static
- * @readonly
- */
-VideoResource.TYPES = ['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'h264', 'avi', 'mov'];
+    /**
+     * List of common video file extensions supported by VideoResource.
+     * @constant
+     * @member {Array<string>}
+     * @static
+     * @readonly
+     */
+    static TYPES = ['mp4', 'm4v', 'webm', 'ogg', 'ogv', 'h264', 'avi', 'mov'];
+}

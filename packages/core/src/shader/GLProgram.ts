@@ -6,13 +6,16 @@
  */
 export class GLProgram
 {
+    program: WebGLProgram;
+    uniformData: any;
+    uniformGroups: any;
     /**
      * Makes a new Pixi program
      *
      * @param program {WebGLProgram} webgl program
      * @param uniformData {Object} uniforms
      */
-    constructor(program, uniformData)
+    constructor(program: WebGLProgram, uniformData: any)
     {
         /**
          * The shader program

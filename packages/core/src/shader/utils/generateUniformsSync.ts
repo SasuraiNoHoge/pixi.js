@@ -1,9 +1,11 @@
+import { UniformGroup } from '../UniformGroup';
+
 // cv = CachedValue
 // v = value
 // ud = uniformData
 // uv = uniformValue
 // l = location
-const GLSL_TO_SINGLE_SETTERS_CACHED = {
+const GLSL_TO_SINGLE_SETTERS_CACHED: any = {
 
     float: `
     if(cv !== v)
@@ -51,7 +53,7 @@ const GLSL_TO_SINGLE_SETTERS_CACHED = {
     sampler2DArray: 'gl.uniform1i(location, v)',
 };
 
-const GLSL_TO_ARRAY_SETTERS = {
+const GLSL_TO_ARRAY_SETTERS: any = {
 
     float:    `gl.uniform1fv(location, v)`,
 
@@ -78,7 +80,7 @@ const GLSL_TO_ARRAY_SETTERS = {
     sampler2DArray: 'gl.uniform1iv(location, v)',
 };
 
-export function generateUniformsSync(group, uniformData)
+export function generateUniformsSync(group: UniformGroup, uniformData: any)
 {
     let func = `var v = null;
     var cv = null
@@ -121,7 +123,7 @@ export function generateUniformsSync(group, uniformData)
             t = syncData.textureCount++;
 
             renderer.texture.bind(uv.${i}, t);
-            
+
             if(ud.${i}.value !== t)
             {
                 ud.${i}.value = t;

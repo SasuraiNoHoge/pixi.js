@@ -2,6 +2,8 @@ import { System } from '../System';
 import { GC_MODES } from '@pixi/constants';
 import { settings } from '@pixi/settings';
 
+import { Renderer } from '@pixi/core';
+
 /**
  * System plugin to the renderer to manage texture garbage collection on the GPU,
  * ensuring that it does not get clogged up with textures that are no longer being used.
@@ -12,10 +14,15 @@ import { settings } from '@pixi/settings';
  */
 export class TextureGCSystem extends System
 {
+    count: number;
+    checkCount: number;
+    maxIdle: number;
+    checkCountMax: number;
+    mode: number;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -127,9 +134,9 @@ export class TextureGCSystem extends System
      *
      * @param {PIXI.DisplayObject} displayObject - the displayObject to remove the textures from.
      */
-    unload(displayObject)
+    unload(displayObject: any)
     {
-        const tm = this.renderer.textureSystem;
+        const tm = this.renderer.texture;
 
         // only destroy non generated textures
         if (displayObject._texture && displayObject._texture._glRenderTargets)

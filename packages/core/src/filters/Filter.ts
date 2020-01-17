@@ -5,6 +5,10 @@ import { settings } from '@pixi/settings';
 import defaultVertex from './defaultFilter.vert';
 import defaultFragment from './defaultFilter.frag';
 
+import { RenderTexture } from '@pixi/core';
+import { FilterSystem } from './FilterSystem';
+import { FilterState } from './FilterState';
+
 /**
  * Filter is a special type of WebGL shader that is applied to the screen.
  *
@@ -143,12 +147,18 @@ import defaultFragment from './defaultFilter.frag';
  */
 export class Filter extends Shader
 {
+    padding: number;
+    resolution: number;
+    enabled: boolean;
+    autoFit: boolean;
+    legacy: boolean;
+    state: State;
     /**
      * @param {string} [vertexSrc] - The source of the vertex shader.
      * @param {string} [fragmentSrc] - The source of the fragment shader.
      * @param {object} [uniforms] - Custom uniforms to use to augment the built-in ones.
      */
-    constructor(vertexSrc, fragmentSrc, uniforms)
+    constructor(vertexSrc?: string, fragmentSrc?: string, uniforms?: {[key:string]: any})
     {
         const program = Program.from(vertexSrc || Filter.defaultVertexSrc,
             fragmentSrc || Filter.defaultFragmentSrc);
@@ -207,16 +217,19 @@ export class Filter extends Shader
      * @param {PIXI.systems.FilterSystem} filterManager - The renderer to retrieve the filter from
      * @param {PIXI.RenderTexture} input - The input render target.
      * @param {PIXI.RenderTexture} output - The target to output to.
-     * @param {PIXI.CLEAR_MODES} clearMode - Should the output be cleared before rendering to it.
+     * @param {boolean} clear - Should the output be cleared before rendering to it
      * @param {object} [currentState] - It's current state of filter.
      *        There are some useful properties in the currentState :
      *        target, filters, sourceFrame, destinationFrame, renderTarget, resolution
      */
-    apply(filterManager, input, output, clearMode, currentState)
+    apply(filterManager: FilterSystem, input: RenderTexture, output: RenderTexture, clear: boolean,
+          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+          // @ts-ignore
+          currentState?: FilterState)
     {
         // do as you please!
 
-        filterManager.applyFilter(this, input, output, clearMode, currentState);
+        filterManager.applyFilter(this, input, output, clear);
 
         // or just do a regular render..
     }
@@ -260,14 +273,13 @@ export class Filter extends Shader
     {
         return defaultFragment;
     }
+
+    /**
+     * Used for caching shader IDs
+     *
+     * @static
+     * @type {object}
+     * @protected
+     */
+    static SOURCE_KEY_MAP: {[key: string]: string};
 }
-
-/**
- * Used for caching shader IDs
- *
- * @static
- * @type {object}
- * @protected
- */
-Filter.SOURCE_KEY_MAP = {};
-

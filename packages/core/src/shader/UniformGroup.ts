@@ -8,11 +8,18 @@ let UID = 0;
  */
 export class UniformGroup
 {
+    uniforms: {[key: string]: any};
+    group: boolean;
+    syncUniforms: {[key: string]: Function};
+    dirtyId: number;
+    id: number;
+    static: boolean;
+
     /**
      * @param {object} [uniforms] - Custom uniforms to use to augment the built-in ones.
      * @param {boolean} [_static] - Uniforms wont be changed after creation
      */
-    constructor(uniforms, _static)
+    constructor(uniforms: any, _static?: boolean)
     {
         /**
          * uniform values
@@ -58,12 +65,12 @@ export class UniformGroup
         this.dirtyId++;
     }
 
-    add(name, uniforms, _static)
+    add(name: string, uniforms: any, _static: boolean)
     {
         this.uniforms[name] = new UniformGroup(uniforms, _static);
     }
 
-    static from(uniforms, _static)
+    static from(uniforms: any, _static: boolean)
     {
         return new UniformGroup(uniforms, _static);
     }

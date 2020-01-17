@@ -2,6 +2,16 @@ import { BaseImageResource } from './BaseImageResource';
 import { settings } from '@pixi/settings';
 import { ALPHA_MODES } from '@pixi/constants';
 
+import { BaseTexture, Renderer, GLTexture } from '@pixi/core';
+
+export interface IImageResourceOptions
+{
+    autoLoad?: boolean;
+    createBitmap?: boolean;
+    crossorigin?: boolean|string;
+    alphaMode?: ALPHA_MODES;
+}
+
 /**
  * Resource type for HTMLImageElement.
  * @class
@@ -10,6 +20,13 @@ import { ALPHA_MODES } from '@pixi/constants';
  */
 export class ImageResource extends BaseImageResource
 {
+    url: string;
+    private _load: Promise<void>;
+    private _process: Promise<void>;
+    preserveBitmap: boolean;
+    createBitmap: boolean;
+    alphaMode: ALPHA_MODES;
+    bitmap: ImageBitmap;
     /**
      * @param {HTMLImageElement|string} source - image source or URL
      * @param {boolean} [options.autoLoad=true] start loading process
@@ -18,7 +35,7 @@ export class ImageResource extends BaseImageResource
      * @param {boolean} [options.crossorigin=true] - Load image using cross origin
      * @param {PIXI.ALPHA_MODES} [options.alphaMode=PIXI.ALPHA_MODES.UNPACK] - Premultiply image alpha in bitmap
      */
-    constructor(source, options)
+    constructor(source: HTMLImageElement|string, options?: IImageResourceOptions)
     {
         options = options || {};
 
@@ -82,10 +99,10 @@ export class ImageResource extends BaseImageResource
          */
         this.alphaMode = typeof options.alphaMode === 'number' ? options.alphaMode : null;
 
-        if (options.premultiplyAlpha !== undefined)
+        if ((options as any).premultiplyAlpha !== undefined)
         {
             // triggers deprecation
-            this.premultiplyAlpha = options.premultiplyAlpha;
+            (this as any).premultiplyAlpha = (options as any).premultiplyAlpha;
         }
 
         /**
@@ -112,10 +129,10 @@ export class ImageResource extends BaseImageResource
     /**
      * returns a promise when image will be loaded and processed
      *
-     * @param {boolean} [createBitmap=true] whether process image into bitmap
+     * @param {boolean} [createBitmap] whether process image into bitmap
      * @returns {Promise<void>}
      */
-    load(createBitmap)
+    load(createBitmap?: boolean): Promise<void>
     {
         if (createBitmap !== undefined)
         {
@@ -127,12 +144,13 @@ export class ImageResource extends BaseImageResource
             return this._load;
         }
 
-        this._load = new Promise((resolve) =>
+        this._load = new Promise((resolve): void =>
         {
-            this.url = this.source.src;
-            const { source } = this;
+            const source = this.source as HTMLImageElement;
 
-            const completed = () =>
+            this.url = source.src;
+
+            const completed = (): void =>
             {
                 if (this.destroyed)
                 {
@@ -150,7 +168,7 @@ export class ImageResource extends BaseImageResource
                 }
                 else
                 {
-                    resolve(this);
+                    resolve();
                 }
             };
 
@@ -174,23 +192,25 @@ export class ImageResource extends BaseImageResource
      *
      * @returns {Promise<void>} cached promise to fill that bitmap
      */
-    process()
+    process(): Promise<void>
     {
+        const source = this.source as HTMLImageElement;
+
         if (this._process !== null)
         {
             return this._process;
         }
         if (this.bitmap !== null || !window.createImageBitmap)
         {
-            return Promise.resolve(this);
+            return Promise.resolve();
         }
 
-        this._process = window.createImageBitmap(this.source,
-            0, 0, this.source.width, this.source.height,
+        this._process = (window.createImageBitmap as any)(source,
+            0, 0, source.width, source.height,
             {
-                premultiplyAlpha: this.premultiplyAlpha === ALPHA_MODES.UNPACK ? 'premultiply' : 'none',
+                premultiplyAlpha: this.alphaMode === ALPHA_MODES.UNPACK ? 'premultiply' : 'none',
             })
-            .then((bitmap) =>
+            .then((bitmap: ImageBitmap) =>
             {
                 if (this.destroyed)
                 {
@@ -214,7 +234,7 @@ export class ImageResource extends BaseImageResource
      * @param {PIXI.GLTexture} glTexture - GLTexture to use
      * @returns {boolean} true is success
      */
-    upload(renderer, baseTexture, glTexture)
+    upload(renderer: Renderer, baseTexture: BaseTexture, glTexture: GLTexture): boolean
     {
         if (typeof this.alphaMode === 'number')
         {
@@ -245,9 +265,11 @@ export class ImageResource extends BaseImageResource
 
             let flag = true;
 
-            for (const key in baseTexture._glTextures)
+            const glTextures = (baseTexture as any)._glTextures;
+
+            for (const key in glTextures)
             {
-                const otherTex = baseTexture._glTextures[key];
+                const otherTex = glTextures[key];
 
                 if (otherTex !== glTexture && otherTex.dirtyId !== baseTexture.dirtyId)
                 {
@@ -276,8 +298,8 @@ export class ImageResource extends BaseImageResource
      */
     dispose()
     {
-        this.source.onload = null;
-        this.source.onerror = null;
+        (this.source as HTMLImageElement).onload = null;
+        (this.source as HTMLImageElement).onerror = null;
 
         super.dispose();
 

@@ -1,5 +1,5 @@
 // Cache the result to prevent running this over and over
-let unsafeEval;
+let unsafeEval: any;
 
 /**
  * Not all platforms allow to generate function code (e.g., `new Function`).

@@ -1,5 +1,7 @@
 import { ImageResource } from './ImageResource';
 
+import { Resource } from './Resource';
+
 /**
  * Collection of installed resource types, class must extend {@link PIXI.resources.Resource}.
  * @example
@@ -26,7 +28,7 @@ import { ImageResource } from './ImageResource';
  * @static
  * @readonly
  */
-export const INSTALLED = [];
+export const INSTALLED: Array<typeof Resource> = [];
 
 /**
  * Create a resource element from a single source element. This
@@ -57,7 +59,7 @@ export const INSTALLED = [];
  *        texture should be updated from the video. Leave at 0 to update at every render
  * @return {PIXI.resources.Resource} The created resource.
  */
-export function autoDetectResource(source, options)
+export function autoDetectResource(source: any, options: any)
 {
     if (!source)
     {

@@ -1,4 +1,4 @@
-import { groupD8 } from '@pixi/math';
+import { groupD8, Rectangle, ISize } from '@pixi/math';
 
 /**
  * Stores a texture's frame in UV coordinates, in
@@ -18,6 +18,16 @@ import { groupD8 } from '@pixi/math';
  */
 export class TextureUvs
 {
+    x0: number;
+    y0: number;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+    x3: number;
+    y3: number;
+    uvsFloat32: Float32Array;
+
     constructor()
     {
         /**
@@ -87,7 +97,7 @@ export class TextureUvs
      * @param {PIXI.Rectangle} baseFrame - The base frame of the texture
      * @param {number} rotate - Rotation of frame, see {@link PIXI.groupD8}
      */
-    set(frame, baseFrame, rotate)
+    set(frame: Rectangle, baseFrame: ISize, rotate: number)
     {
         const tw = baseFrame.width;
         const th = baseFrame.height;

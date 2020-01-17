@@ -1,6 +1,10 @@
 import { System } from '../System';
 import { Rectangle } from '@pixi/math';
 
+import { Renderer } from '../Renderer';
+import { RenderTexture } from './RenderTexture';
+import { BaseRenderTexture } from './BaseRenderTexture';
+
 const tempRect = new Rectangle();
 
 /**
@@ -15,10 +19,16 @@ const tempRect = new Rectangle();
 
 export class RenderTextureSystem extends System
 {
+    clearColor: number[];
+    defaultMaskStack: Array<any>;
+    current: RenderTexture;
+    readonly sourceFrame: Rectangle;
+    readonly destinationFrame: Rectangle;
+
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -65,7 +75,7 @@ export class RenderTextureSystem extends System
      * @param {PIXI.Rectangle} [sourceFrame] - part of screen that is mapped to the renderTexture
      * @param {PIXI.Rectangle} [destinationFrame] - part of renderTexture, by default it has the same size as sourceFrame
      */
-    bind(renderTexture = null, sourceFrame, destinationFrame)
+    bind(renderTexture: RenderTexture = null, sourceFrame?: Rectangle, destinationFrame?: Rectangle)
     {
         this.current = renderTexture;
 
@@ -75,7 +85,7 @@ export class RenderTextureSystem extends System
 
         if (renderTexture)
         {
-            const baseTexture = renderTexture.baseTexture;
+            const baseTexture = renderTexture.baseTexture as BaseRenderTexture;
 
             resolution = baseTexture.resolution;
 
@@ -141,13 +151,12 @@ export class RenderTextureSystem extends System
      * Erases the render texture and fills the drawing area with a colour
      *
      * @param {number[]} [clearColor] - The color as rgba, default to use the renderer backgroundColor
-     * @return {PIXI.Renderer} Returns itself.
      */
-    clear(clearColor)
+    clear(clearColor?: number[])
     {
         if (this.current)
         {
-            clearColor = clearColor || this.current.baseTexture.clearColor;
+            clearColor = clearColor || (this.current.baseTexture as BaseRenderTexture).clearColor;
         }
         else
         {

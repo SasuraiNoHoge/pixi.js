@@ -1,5 +1,7 @@
 import { System } from '../System';
 
+import { MaskData } from './MaskData';
+import { Renderer } from '@pixi/core';
 /**
  * System plugin to the renderer to manage masks of certain type
  *
@@ -9,10 +11,12 @@ import { System } from '../System';
  */
 export class AbstractMaskSystem extends System
 {
+    maskStack: Array<MaskData>;
+    glConst: number;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -44,7 +48,7 @@ export class AbstractMaskSystem extends System
      *
      * @param {PIXI.MaskData[]} maskStack - The mask stack
      */
-    setMaskStack(maskStack)
+    setMaskStack(maskStack: Array<MaskData>)
     {
         const { gl } = this.renderer;
         const curStackLen = this.getStackLength();
@@ -82,7 +86,7 @@ export class AbstractMaskSystem extends System
      */
     destroy()
     {
-        super.destroy(this);
+        super.destroy();
 
         this.maskStack = null;
     }

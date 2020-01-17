@@ -2,6 +2,7 @@ import { Attribute } from './Attribute';
 import { Buffer } from './Buffer';
 import { interleaveTypedArrays } from './utils/interleaveTypedArrays';
 import { getBufferType } from './utils/getBufferType';
+import { TYPES } from '@pixi/constants';
 import { Runner } from '@pixi/runner';
 
 const byteSizeMap = { 5126: 4, 5123: 2, 5121: 1 };
@@ -43,7 +44,7 @@ export class Geometry
      * @param {PIXI.Buffer[]} [buffers]  an array of buffers. optional.
      * @param {object} [attributes] of the geometry, optional structure of the attributes layout
      */
-    constructor(buffers = [], attributes = {})
+    constructor(buffers: Array<Buffer> = [], attributes: any = {})
     {
         this.buffers = buffers;
 
@@ -90,10 +91,12 @@ export class Geometry
     * @param {Number} [type=PIXI.TYPES.FLOAT] what type of number is the attribute. Check {PIXI.TYPES} to see the ones available
     * @param {Number} [stride=0] How far apart (in floats) the start of each value is. (used for interleaving data)
     * @param {Number} [start=0] How far into the array to start reading values (used for interleaving data)
+    * @param {boolean} [instance=false] Instancing flag
     *
     * @return {PIXI.Geometry} returns self, useful for chaining.
     */
-    addAttribute(id, buffer, size, normalized = false, type, stride, start, instance = false)
+    addAttribute(id: string, buffer: Buffer|Float32Array|Uint32Array|Array<number>, size = 0, normalized = false,
+                 type?: TYPES, stride = 0, start = 0, instance = false)
     {
         if (!buffer)
         {

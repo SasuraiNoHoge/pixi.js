@@ -20,7 +20,7 @@ export class CanvasResource extends BaseImageResource
      * @param {HTMLCanvasElement|OffscreenCanvas} source - The source object
      * @return {boolean} `true` if source is HTMLCanvasElement or OffscreenCanvas
      */
-    static test(source)
+    static test(source: any): source is OffscreenCanvas|HTMLCanvasElement
     {
         const { OffscreenCanvas } = window;
 

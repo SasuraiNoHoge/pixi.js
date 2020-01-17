@@ -4,6 +4,9 @@ import { GLTexture } from './GLTexture';
 import { removeItems } from '@pixi/utils';
 import { MIPMAP_MODES, WRAP_MODES, SCALE_MODES, TYPES } from '@pixi/constants';
 
+import { Texture } from './Texture';
+import { Renderer } from '@pixi/core';
+
 /**
  * System plugin to the renderer to manage textures.
  *
@@ -13,10 +16,11 @@ import { MIPMAP_MODES, WRAP_MODES, SCALE_MODES, TYPES } from '@pixi/constants';
  */
 export class TextureSystem extends System
 {
+    webGLVersion: number;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -236,7 +240,7 @@ export class TextureSystem extends System
         return glTexture;
     }
 
-    initTextureType(texture, glTexture)
+    initTextureType(texture: BaseTexture, glTexture: GLTexture)
     {
         glTexture.internalFormat = texture.format;
         glTexture.type = texture.type;
@@ -270,7 +274,7 @@ export class TextureSystem extends System
      * @private
      * @param {PIXI.BaseTexture} texture - Texture to initialize
      */
-    updateTexture(texture)
+    updateTexture(texture: BaseTexture)
     {
         const glTexture = texture._glTextures[this.CONTEXT_UID];
 
@@ -327,7 +331,7 @@ export class TextureSystem extends System
      * @param {PIXI.BaseTexture|PIXI.Texture} texture - the texture to destroy
      * @param {boolean} [skipRemove=false] - Whether to skip removing the texture from the TextureManager.
      */
-    destroyTexture(texture, skipRemove)
+    destroyTexture(texture: BaseTexture|Texture, skipRemove?: boolean)
     {
         const { gl } = this;
 
@@ -406,7 +410,7 @@ export class TextureSystem extends System
      * @param {PIXI.BaseTexture} texture - Texture to update
      * @param {PIXI.GLTexture} glTexture
      */
-    setStyle(texture, glTexture)
+    setStyle(texture: BaseTexture, glTexture: GLTexture)
     {
         const gl = this.gl;
 

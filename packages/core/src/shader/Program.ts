@@ -12,9 +12,11 @@ import defaultVertex from './defaultProgram.vert';
 import { settings } from '@pixi/settings';
 import { PRECISION } from '@pixi/constants';
 
+import { GLProgram } from './GLProgram';
+
 let UID = 0;
 
-const nameCache = {};
+const nameCache : { [key: string]: number } = {};
 
 /**
  * Helper class to create a shader program.
@@ -24,12 +26,20 @@ const nameCache = {};
  */
 export class Program
 {
+    id: number;
+    vertexSrc: string;
+    fragmentSrc: string;
+    nameCache: any;
+    glPrograms: { [ key: number ]: GLProgram};
+    syncUniforms: any;
+    attributeData: any;
+    uniformData: any;
     /**
      * @param {string} [vertexSrc] - The source of the vertex shader.
      * @param {string} [fragmentSrc] - The source of the fragment shader.
      * @param {string} [name] - Name for shader
      */
-    constructor(vertexSrc, fragmentSrc, name = 'pixi-shader')
+    constructor(vertexSrc?: string, fragmentSrc?: string, name = 'pixi-shader')
     {
         this.id = UID++;
 
@@ -88,7 +98,7 @@ export class Program
      * @param {string} [vertexSrc] - The source of the vertex shader.
      * @param {string} [fragmentSrc] - The source of the fragment shader.
      */
-    extractData(vertexSrc, fragmentSrc)
+    extractData(vertexSrc: string, fragmentSrc: string)
     {
         const gl = getTestContext();
 
@@ -117,10 +127,10 @@ export class Program
      *
      * @returns {object} the attribute data for this program
      */
-    getAttributeData(program, gl)
+    getAttributeData(program: WebGLProgram, gl: WebGL2RenderingContext)
     {
-        const attributes = {};
-        const attributesArray = [];
+        const attributes: any = {};
+        const attributesArray: Array<any> = [];
 
         const totalAttributes = gl.getProgramParameter(program, gl.ACTIVE_ATTRIBUTES);
 
@@ -161,9 +171,9 @@ export class Program
      *
      * @returns {object} the uniform data for this program
      */
-    getUniformData(program, gl)
+    getUniformData(program: WebGLProgram, gl: WebGL2RenderingContext)
     {
-        const uniforms = {};
+        const uniforms: any = {};
 
         const totalUniforms = gl.getProgramParameter(program, gl.ACTIVE_UNIFORMS);
 
@@ -176,7 +186,7 @@ export class Program
             const uniformData = gl.getActiveUniform(program, i);
             const name = uniformData.name.replace(/\[.*?\]/, '');
 
-            const isArray = uniformData.name.match(/\[.*?\]/, '');
+            const isArray = uniformData.name.match(/\[.*?\]/);
             const type = mapType(gl, uniformData.type);
 
             /*eslint-disable */
@@ -226,7 +236,7 @@ export class Program
      *
      * @returns {PIXI.Program} an shiny new Pixi shader!
      */
-    static from(vertexSrc, fragmentSrc, name)
+    static from(vertexSrc?: string, fragmentSrc?: string, name?: string)
     {
         const key = vertexSrc + fragmentSrc;
 

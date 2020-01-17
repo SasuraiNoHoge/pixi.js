@@ -1,5 +1,9 @@
 import { ArrayResource } from './ArrayResource';
+import { ImageSource } from "./BaseImageResource";
+import { Resource } from './Resource';
 import { TARGETS } from '@pixi/constants';
+
+import { BaseTexture, Renderer, GLTexture } from '@pixi/core';
 
 /**
  * Resource for a CubeTexture which contains six resources.
@@ -15,7 +19,9 @@ import { TARGETS } from '@pixi/constants';
  */
 export class CubeResource extends ArrayResource
 {
-    constructor(source, options)
+    items: Array<BaseTexture>;
+
+    constructor(source: Array<string|Resource>, options?: any)
     {
         options = options || {};
 
@@ -43,7 +49,7 @@ export class CubeResource extends ArrayResource
      * @override
      * @param {PIXI.BaseTexture} baseTexture - parent base texture
      */
-    bind(baseTexture)
+    bind(baseTexture: BaseTexture)
     {
         super.bind(baseTexture);
 
@@ -55,7 +61,9 @@ export class CubeResource extends ArrayResource
      *
      * @returns {boolean} true is success
      */
-    upload(renderer, baseTexture, glTexture)
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    upload(renderer: Renderer, baseTexture: BaseTexture, glTexture: GLTexture, source?: ImageSource): boolean
     {
         const dirty = this.itemDirtyIds;
 
@@ -79,14 +87,14 @@ export class CubeResource extends ArrayResource
 
         return true;
     }
-}
 
-/**
- * Number of texture sides to store for CubeResources
- *
- * @name PIXI.resources.CubeResource.SIDES
- * @static
- * @member {number}
- * @default 6
- */
-CubeResource.SIDES = 6;
+    /**
+     * Number of texture sides to store for CubeResources
+     *
+     * @name PIXI.resources.CubeResource.SIDES
+     * @static
+     * @member {number}
+     * @default 6
+     */
+    static SIDES = 6;
+}

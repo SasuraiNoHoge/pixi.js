@@ -1,5 +1,7 @@
 import { Matrix } from '@pixi/math';
 
+import { Texture } from './Texture';
+
 const tempMat = new Matrix();
 
 /**
@@ -21,13 +23,21 @@ const tempMat = new Matrix();
  */
 export class TextureMatrix
 {
+    _texture: Texture;
+    mapCoord: Matrix;
+    readonly uClampFrame: Float32Array;
+    readonly uClampOffset: Float32Array;
+    protected _updateID: number;
+    clampOffset: number;
+    clampMargin: number;
+    readonly isSimple: boolean;
     /**
      *
      * @param {PIXI.Texture} texture observed texture
      * @param {number} [clampMargin] Changes frame clamping, 0.5 by default. Use -0.5 for extra border.
      * @constructor
      */
-    constructor(texture, clampMargin)
+    constructor(texture: Texture, clampMargin: number)
     {
         this._texture = texture;
 
@@ -99,7 +109,7 @@ export class TextureMatrix
         return this._texture;
     }
 
-    set texture(value) // eslint-disable-line require-jsdoc
+    set texture(value: Texture) // eslint-disable-line require-jsdoc
     {
         this._texture = value;
         this._updateID = -1;
@@ -111,7 +121,7 @@ export class TextureMatrix
      * @param {Float32Array} [out=uvs] output
      * @returns {Float32Array} output
      */
-    multiplyUvs(uvs, out)
+    multiplyUvs(uvs: Float32Array, out?: Float32Array)
     {
         if (out === undefined)
         {
@@ -137,7 +147,7 @@ export class TextureMatrix
      * @param {boolean} [forceUpdate=false] if true, matrices will be updated any case
      * @returns {boolean} whether or not it was updated
      */
-    update(forceUpdate)
+    update(forceUpdate?: boolean)
     {
         const tex = this._texture;
 
@@ -180,7 +190,7 @@ export class TextureMatrix
         this.uClampOffset[0] = offset / texBase.realWidth;
         this.uClampOffset[1] = offset / texBase.realHeight;
 
-        this.isSimple = tex._frame.width === texBase.width
+        (this as any).isSimple = tex._frame.width === texBase.width
             && tex._frame.height === texBase.height
             && tex.rotate === 0;
 

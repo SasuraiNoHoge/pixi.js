@@ -2,6 +2,9 @@ import { RenderTexture } from './RenderTexture';
 import { BaseRenderTexture } from './BaseRenderTexture';
 import { nextPow2 } from '@pixi/utils';
 
+import { IBaseTextureOptions } from '../textures/BaseTexture';
+import { ISize } from '@pixi/math';
+
 /**
  * Experimental!
  *
@@ -16,11 +19,16 @@ import { nextPow2 } from '@pixi/utils';
  */
 export class RenderTexturePool
 {
+    textureOptions: IBaseTextureOptions;
+    texturePool: any;
+    enableFullScreen: boolean;
+    private _pixelsWidth: number;
+    private _pixelsHeight: number;
     /**
      * @param {object} [textureOptions] - options that will be passed to BaseRenderTexture constructor
      * @param {PIXI.SCALE_MODES} [textureOptions.scaleMode] - See {@link PIXI.SCALE_MODES} for possible values.
      */
-    constructor(textureOptions)
+    constructor(textureOptions?: IBaseTextureOptions)
     {
         this.texturePool = {};
         this.textureOptions = textureOptions || {};
@@ -45,7 +53,7 @@ export class RenderTexturePool
      * @param {number} realHeight height of texture in pixels
      * @returns {RenderTexture}
      */
-    createTexture(realWidth, realHeight)
+    createTexture(realWidth: number, realHeight: number)
     {
         const baseRenderTexture = new BaseRenderTexture(Object.assign({
             width: realWidth,
@@ -65,9 +73,9 @@ export class RenderTexturePool
      * @param {number} [resolution=1] - The resolution of the render texture.
      * @return {PIXI.RenderTexture} The new render texture.
      */
-    getOptimalTexture(minWidth, minHeight, resolution = 1)
+    getOptimalTexture(minWidth: number, minHeight: number, resolution = 1)
     {
-        let key = RenderTexturePool.SCREEN_KEY;
+        let key : number|string = RenderTexturePool.SCREEN_KEY;
 
         minWidth *= resolution;
         minHeight *= resolution;
@@ -107,7 +115,7 @@ export class RenderTexturePool
      *  It overrides, it does not multiply
      * @returns {PIXI.RenderTexture}
      */
-    getFilterTexture(input, resolution)
+    getFilterTexture(input: RenderTexture, resolution: number)
     {
         const filterTexture = this.getOptimalTexture(input.width, input.height, resolution || input.resolution);
 
@@ -120,7 +128,7 @@ export class RenderTexturePool
      * Place a render texture back into the pool.
      * @param {PIXI.RenderTexture} renderTexture - The renderTexture to free
      */
-    returnTexture(renderTexture)
+    returnTexture(renderTexture: RenderTexture)
     {
         const key = renderTexture.filterPoolKey;
 
@@ -132,7 +140,7 @@ export class RenderTexturePool
      * Alias for returnTexture, to be compliant with FilterSystem interface
      * @param {PIXI.RenderTexture} renderTexture - The renderTexture to free
      */
-    returnFilterTexture(renderTexture)
+    returnFilterTexture(renderTexture: RenderTexture)
     {
         this.returnTexture(renderTexture);
     }
@@ -142,7 +150,7 @@ export class RenderTexturePool
      *
      * @param {boolean} [destroyTextures=true] destroy all stored textures
      */
-    clear(destroyTextures)
+    clear(destroyTextures: boolean)
     {
         destroyTextures = destroyTextures !== false;
         if (destroyTextures)
@@ -172,7 +180,7 @@ export class RenderTexturePool
      *
      * @param {PIXI.ISize} size - Initial size of screen
      */
-    setScreenSize(size)
+    setScreenSize(size: ISize)
     {
         if (size.width === this._pixelsWidth
             && size.height === this._pixelsHeight)
@@ -197,12 +205,12 @@ export class RenderTexturePool
         this._pixelsWidth = size.width;
         this._pixelsHeight = size.height;
     }
-}
 
-/**
- * Key that is used to store fullscreen renderTextures in a pool
- *
- * @static
- * @const {string}
- */
-RenderTexturePool.SCREEN_KEY = 'screen';
+    /**
+     * Key that is used to store fullscreen renderTextures in a pool
+     *
+     * @static
+     * @const {string}
+     */
+    static SCREEN_KEY = 'screen';
+}

@@ -1,7 +1,9 @@
 import { System } from '../System';
-import { MaskData } from './MaskData';
+import { IMaskTarget, MaskData } from './MaskData';
 import { SpriteMaskFilter } from '../filters/spriteMask/SpriteMaskFilter';
 import { MASK_TYPES } from '@pixi/constants';
+
+import { Renderer } from '@pixi/core';
 
 /**
  * System plugin to the renderer to manage masks.
@@ -12,19 +14,18 @@ import { MASK_TYPES } from '@pixi/constants';
  */
 export class MaskSystem extends System
 {
+    enableScissor: boolean;
+    alphaMaskPool: Array<SpriteMaskFilter[]>;
+    maskDataPool: Array<MaskData>;
+    maskStack: Array<MaskData>;
+    alphaMaskIndex: number;
+
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
-
-        /**
-         * Target to mask
-         * @member {PIXI.DisplayObject}
-         * @readonly
-         */
-        this.scissorRenderTarget = null;
 
         /**
          * Enable scissor
@@ -63,7 +64,7 @@ export class MaskSystem extends System
      *
      * @param {PIXI.MaskData[]} maskStack - The mask stack
      */
-    setMaskStack(maskStack)
+    setMaskStack(maskStack: Array<MaskData>)
     {
         this.maskStack = maskStack;
         this.renderer.scissor.setMaskStack(maskStack);
@@ -77,14 +78,16 @@ export class MaskSystem extends System
      * @param {PIXI.DisplayObject} target - Display Object to push the mask to
      * @param {PIXI.MaskData|PIXI.Sprite|PIXI.Graphics|PIXI.DisplayObject} maskData - The masking data.
      */
-    push(target, maskData)
+    push(target: IMaskTarget, maskDataOrTarget: MaskData|IMaskTarget)
     {
+        let maskData = maskDataOrTarget as MaskData;
+
         if (!maskData.isMaskData)
         {
             const d = this.maskDataPool.pop() || new MaskData();
 
             d.pooled = true;
-            d.maskObject = maskData;
+            d.maskObject = maskDataOrTarget as IMaskTarget;
             maskData = d;
         }
 
@@ -122,7 +125,7 @@ export class MaskSystem extends System
      *
      * @param {PIXI.DisplayObject} target - Display Object to pop the mask from
      */
-    pop(target)
+    pop(target: IMaskTarget)
     {
         const maskData = this.maskStack.pop();
 
@@ -160,7 +163,7 @@ export class MaskSystem extends System
      * Sets type of MaskData based on its maskObject
      * @param {PIXI.MaskData} maskData
      */
-    detect(maskData)
+    detect(maskData: MaskData)
     {
         const maskObject = maskData.maskObject;
 
@@ -203,7 +206,7 @@ export class MaskSystem extends System
      *
      * @param {PIXI.MaskData} maskData - Sprite to be used as the mask
      */
-    pushSpriteMask(maskData)
+    pushSpriteMask(maskData: MaskData)
     {
         const { maskObject } = maskData;
         const target = maskData._target;

@@ -3,6 +3,9 @@ import { GLBuffer } from './GLBuffer';
 import { ENV } from '@pixi/constants';
 import { settings } from '../settings';
 
+import { Geometry, Shader } from "@pixi/core";
+import { DRAW_MODES } from '@pixi/constants';
+
 const byteSizeMap = { 5126: 4, 5123: 2, 5121: 1 };
 
 /**
@@ -152,7 +155,7 @@ export class GeometrySystem extends System
      * @param {PIXI.Geometry} geometry instance of geometry to bind
      * @param {PIXI.Shader} [shader] instance of shader to use vao for
      */
-    bind(geometry, shader)
+    bind(geometry?: Geometry, shader?: Shader)
     {
         shader = shader || this.renderer.shader.shader;
 
@@ -594,7 +597,7 @@ export class GeometrySystem extends System
      * @param {Number} [start] - Starting index
      * @param {Number} [instanceCount] - the number of instances of the set of elements to execute
      */
-    draw(type, size, start, instanceCount)
+    draw(type: DRAW_MODES, size?: number, start?: number, instanceCount?: number)
     {
         const { gl } = this;
         const geometry = this._activeGeometry;
