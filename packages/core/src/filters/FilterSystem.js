@@ -478,8 +478,8 @@ export class FilterSystem extends System
         objectClamp[2] = (Math.ceil(inputRect.width - inputRect.right + targetBounds.right) - 0.5) * inputPixel[2];
         objectClamp[3] = (Math.ceil(inputRect.height - inputRect.bottom + targetBounds.bottom) - 0.5) * inputPixel[3];
 
-        globalUniforms.inputRect = inputRect;
-        globalUniforms.outputRect = outputRect;
+        globalUniforms.inputFrame = inputRect;
+        globalUniforms.outputFrame = outputRect;
 
         if (state.legacy) // Should we remove this condition? Some filters use this feature anyways.
         {
