@@ -1,6 +1,6 @@
 import { System } from '../System';
 import { BaseTexture } from './BaseTexture';
-import { GLTexture } from './GLTexture';
+import { GLTexture } from '@pixi/core';
 import { removeItems } from '@pixi/utils';
 import { MIPMAP_MODES, WRAP_MODES, SCALE_MODES, TYPES } from '@pixi/constants';
 
@@ -17,6 +17,15 @@ import { Renderer } from '@pixi/core';
 export class TextureSystem extends System
 {
     webGLVersion: number;
+    boundTextures: Array<BaseTexture>;
+    currentLocation: number;
+    managedTextures: Array<BaseTexture>;
+    _unknownBoundTextures: boolean;
+    unknownTexture: BaseTexture;
+    emptyTextures: {[key: number]: GLTexture};
+
+    CONTEXT_UID: number;
+    gl: WebGL2RenderingContext;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
@@ -112,16 +121,16 @@ export class TextureSystem extends System
      *
      * If you want to unbind something, please use `unbind(texture)` instead of `bind(null, textureLocation)`
      *
-     * @param {PIXI.Texture|PIXI.BaseTexture} texture - Texture to bind
+     * @param {PIXI.Texture|PIXI.BaseTexture} texture_ - Texture to bind
      * @param {number} [location=0] - Location to bind at
      */
-    bind(texture, location = 0)
+    bind(texture: Texture|BaseTexture, location = 0)
     {
         const { gl } = this;
 
         if (texture)
         {
-            texture = texture.baseTexture || texture;
+            texture = texture.castToBaseTexture();
 
             if (texture.valid)
             {
@@ -183,9 +192,9 @@ export class TextureSystem extends System
 
     /**
      * Unbind a texture
-     * @param {PIXI.Texture|PIXI.BaseTexture} texture - Texture to bind
+     * @param {PIXI.BaseTexture} texture - Texture to bind
      */
-    unbind(texture)
+    unbind(texture?: BaseTexture)
     {
         const { gl, boundTextures } = this;
 
@@ -225,7 +234,7 @@ export class TextureSystem extends System
      * @private
      * @param {PIXI.BaseTexture} texture - Texture to initialize
      */
-    initTexture(texture)
+    initTexture(texture: BaseTexture)
     {
         const glTexture = new GLTexture(this.gl.createTexture());
 
@@ -328,14 +337,14 @@ export class TextureSystem extends System
      * Deletes the texture from WebGL
      *
      * @private
-     * @param {PIXI.BaseTexture|PIXI.Texture} texture - the texture to destroy
+     * @param {PIXI.BaseTexture|PIXI.Texture} texture_ - the texture to destroy
      * @param {boolean} [skipRemove=false] - Whether to skip removing the texture from the TextureManager.
      */
     destroyTexture(texture: BaseTexture|Texture, skipRemove?: boolean)
     {
         const { gl } = this;
 
-        texture = texture.baseTexture || texture;
+        texture = texture.castToBaseTexture();
 
         if (texture._glTextures[this.CONTEXT_UID])
         {
@@ -364,7 +373,7 @@ export class TextureSystem extends System
      * @private
      * @param {PIXI.BaseTexture} texture - Texture to update
      */
-    updateTextureStyle(texture)
+    updateTextureStyle(texture: BaseTexture)
     {
         const glTexture = texture._glTextures[this.CONTEXT_UID];
 
@@ -375,7 +384,7 @@ export class TextureSystem extends System
 
         if ((texture.mipmap === MIPMAP_MODES.POW2 || this.webGLVersion !== 2) && !texture.isPowerOfTwo)
         {
-            glTexture.mipmap = 0;
+            glTexture.mipmap = false;
         }
         else
         {

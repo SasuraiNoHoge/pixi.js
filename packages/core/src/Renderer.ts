@@ -1,4 +1,4 @@
-import { AbstractRenderer } from './AbstractRenderer';
+import { AbstractRenderer, IRendererOptions, IRendererPlugins } from './AbstractRenderer';
 import { sayHello, isWebGLSupported } from '@pixi/utils';
 import { MaskSystem } from './mask/MaskSystem';
 import { StencilSystem } from './mask/StencilSystem';
@@ -18,6 +18,9 @@ import { RENDERER_TYPE } from '@pixi/constants';
 import { UniformGroup } from './shader/UniformGroup';
 import { Matrix } from '@pixi/math';
 import { Runner } from '@pixi/runner';
+
+// import types
+import { RenderTexture } from './renderTexture/RenderTexture';
 
 /**
  * The Renderer draws the scene and all its content onto a WebGL enabled canvas.
@@ -52,6 +55,8 @@ export class Renderer extends AbstractRenderer
     filter: FilterSystem;
     renderTexture: RenderTextureSystem;
     batch: BatchSystem;
+
+    runners: {[key: string]: Runner};
 
     resolution: number;
     renderingToScreen: boolean;
@@ -98,20 +103,12 @@ export class Renderer extends AbstractRenderer
      *  for devices with dual graphics card.
      * @param {object} [options.context] If WebGL context already exists, all parameters must be taken from it.
      */
-    constructor(options = {})
+    constructor(options? : IRendererOptions)
     {
-        super('WebGL', options);
+        super(RENDERER_TYPE.WEBGL, options);
 
         // the options will have been modified here in the super constructor with pixi's default settings..
         options = this.options;
-
-        /**
-         * The type of this renderer as a standardized const
-         *
-         * @member {number}
-         * @see PIXI.RENDERER_TYPE
-         */
-        this.type = RENDERER_TYPE.WEBGL;
 
         /**
          * WebGL context, set by the contextSystem (this.context)
@@ -143,12 +140,12 @@ export class Renderer extends AbstractRenderer
          */
         this.runners = {
             destroy: new Runner('destroy'),
-            contextChange: new Runner('contextChange', 1),
+            contextChange: new Runner('contextChange'),
             reset: new Runner('reset'),
             update: new Runner('update'),
             postrender: new Runner('postrender'),
             prerender: new Runner('prerender'),
-            resize: new Runner('resize', 2),
+            resize: new Runner('resize'),
         };
 
         /**
@@ -276,7 +273,7 @@ export class Renderer extends AbstractRenderer
         else
         {
             this.context.initFromOptions({
-                alpha: this.transparent,
+                alpha: !!this.transparent,
                 antialias: options.antialias,
                 premultipliedAlpha: this.transparent && this.transparent !== 'notMultiplied',
                 stencil: true,
@@ -307,7 +304,7 @@ export class Renderer extends AbstractRenderer
      *        sure it doesn't collide with properties on Renderer.
      * @return {PIXI.Renderer} Return instance of renderer
      */
-    addSystem(ClassRef, name)
+    addSystem(ClassRef: any, name: string): this
     {
         if (!name)
         {
@@ -316,12 +313,12 @@ export class Renderer extends AbstractRenderer
 
         const system = new ClassRef(this);
 
-        if (this[name])
+        if ((this as any)[name])
         {
             throw new Error(`Whoops! The name "${name}" is already in use`);
         }
 
-        this[name] = system;
+        (this as any)[name] = system;
 
         for (const i in this.runners)
         {
@@ -359,12 +356,12 @@ export class Renderer extends AbstractRenderer
      * @param {PIXI.Matrix} [transform] - A transform to apply to the render texture before rendering.
      * @param {boolean} [skipUpdateTransform=false] - Should we skip the update transform pass?
      */
-    render(displayObject, renderTexture, clear, transform, skipUpdateTransform)
+    render(displayObject: any, renderTexture?: RenderTexture, clear?: boolean, transform?: Matrix, skipUpdateTransform?: boolean)
     {
         // can be handy to know!
         this.renderingToScreen = !renderTexture;
 
-        this.runners.prerender.run();
+        this.runners.prerender.emit();
         this.emit('prerender');
 
         // apply a transform at a GPU level
@@ -410,7 +407,7 @@ export class Renderer extends AbstractRenderer
             renderTexture.baseTexture.update();
         }
 
-        this.runners.postrender.run();
+        this.runners.postrender.emit();
 
         // reset transform after render
         this.projection.transform = null;
@@ -424,11 +421,11 @@ export class Renderer extends AbstractRenderer
      * @param {number} screenWidth - The new width of the screen.
      * @param {number} screenHeight - The new height of the screen.
      */
-    resize(screenWidth, screenHeight)
+    resize(screenWidth: number, screenHeight: number)
     {
         super.resize(screenWidth, screenHeight);
 
-        this.runners.resize.run(screenWidth, screenHeight);
+        this.runners.resize.emit(screenWidth, screenHeight);
     }
 
     /**
@@ -438,7 +435,7 @@ export class Renderer extends AbstractRenderer
      */
     reset()
     {
-        this.runners.reset.run();
+        this.runners.reset.emit();
 
         return this;
     }
@@ -448,8 +445,8 @@ export class Renderer extends AbstractRenderer
      */
     clear()
     {
-        this.framebuffer.bind();
-        this.framebuffer.clear();
+        this.renderTexture.bind();
+        this.renderTexture.clear();
     }
 
     /**
@@ -458,9 +455,9 @@ export class Renderer extends AbstractRenderer
      * @param {boolean} [removeView=false] - Removes the Canvas element from the DOM.
      *  See: https://github.com/pixijs/pixi.js/issues/2233
      */
-    destroy(removeView)
+    destroy(removeView?: boolean)
     {
-        this.runners.destroy.run();
+        this.runners.destroy.emit();
 
         for (const r in this.runners)
         {
@@ -487,6 +484,7 @@ export class Renderer extends AbstractRenderer
      * @property {PIXI.prepare.Prepare} prepare Pre-render display objects.
      */
 
+    static __plugins: IRendererPlugins;
     /**
      * Adds a plugin to the renderer.
      *
@@ -494,7 +492,7 @@ export class Renderer extends AbstractRenderer
      * @param {string} pluginName - The name of the plugin.
      * @param {Function} ctor - The constructor function or class for the plugin.
      */
-    static registerPlugin(pluginName, ctor)
+    static registerPlugin(pluginName: string, ctor: Function)
     {
         Renderer.__plugins = Renderer.__plugins || {};
         Renderer.__plugins[pluginName] = ctor;

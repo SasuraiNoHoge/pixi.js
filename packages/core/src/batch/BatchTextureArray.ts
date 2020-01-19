@@ -1,3 +1,5 @@
+import { BaseTexture } from '@pixi/core';
+
 /**
  * Used by the batcher to build texture batches.
  * Holds list of textures and their respective locations.
@@ -7,6 +9,10 @@
  */
 export class BatchTextureArray
 {
+    elements: BaseTexture[];
+    ids: number[];
+    count: number;
+
     constructor()
     {
         /**

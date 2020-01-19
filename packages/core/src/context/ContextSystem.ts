@@ -2,6 +2,8 @@ import { System } from '../System';
 import { settings } from '../settings';
 import { ENV } from '@pixi/constants';
 
+import { Renderer } from '@pixi/core';
+
 let CONTEXT_UID = 0;
 
 /**
@@ -13,10 +15,28 @@ let CONTEXT_UID = 0;
  */
 export class ContextSystem extends System
 {
+    CONTEXT_UID: number;
+    gl: WebGL2RenderingContext;
+    webGLVersion: number;
+    extensions:
+    {
+        drawBuffers?: WEBGL_draw_buffers;
+        depthTexture?: OES_texture_float;
+        loseContext?: WEBGL_lose_context;
+        vertexArrayObject?: OES_vertex_array_object;
+        anisotropicFiltering?: EXT_texture_filter_anisotropic;
+        uint32ElementIndex?: OES_element_index_uint;
+        floatTexture?: OES_texture_float;
+        floatTextureLinear?: OES_texture_float_linear;
+        textureHalfFloat?: OES_texture_half_float;
+        textureHalfFloatLinear?: OES_texture_half_float_linear;
+        colorBufferFloat?: WEBGL_color_buffer_float;
+    };
+
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -44,7 +64,7 @@ export class ContextSystem extends System
         this.handleContextLost = this.handleContextLost.bind(this);
         this.handleContextRestored = this.handleContextRestored.bind(this);
 
-        renderer.view.addEventListener('webglcontextlost', this.handleContextLost, false);
+        (renderer.view as any).addEventListener('webglcontextlost', this.handleContextLost, false);
         renderer.view.addEventListener('webglcontextrestored', this.handleContextRestored, false);
     }
 
@@ -62,7 +82,7 @@ export class ContextSystem extends System
      * Handle the context change event
      * @param {WebGLRenderingContext} gl new webgl context
      */
-    contextChange(gl)
+    contextChange(gl: WebGL2RenderingContext)
     {
         this.gl = gl;
         this.renderer.gl = gl;
@@ -81,13 +101,13 @@ export class ContextSystem extends System
      * @protected
      * @param {WebGLRenderingContext} gl - WebGL context
      */
-    initFromContext(gl)
+    initFromContext(gl: WebGL2RenderingContext)
     {
         this.gl = gl;
         this.validateContext(gl);
         this.renderer.gl = gl;
         this.renderer.CONTEXT_UID = CONTEXT_UID++;
-        this.renderer.runners.contextChange.run(gl);
+        this.renderer.runners.contextChange.emit(gl);
     }
 
     /**
@@ -97,7 +117,7 @@ export class ContextSystem extends System
      * @see https://developer.mozilla.org/en-US/docs/Web/API/HTMLCanvasElement/getContext
      * @param {object} options - context attributes
      */
-    initFromOptions(options)
+    initFromOptions(options: WebGLContextAttributes)
     {
         const gl = this.createContext(this.renderer.view, options);
 
@@ -112,7 +132,7 @@ export class ContextSystem extends System
      * @see https://developer.mozilla.org/en/docs/Web/API/HTMLCanvasElement/getContext
      * @return {WebGLRenderingContext} the WebGL context
      */
-    createContext(canvas, options)
+    createContext(canvas: HTMLCanvasElement, options: WebGLContextAttributes)
     {
         let gl;
 
@@ -139,11 +159,11 @@ export class ContextSystem extends System
             }
         }
 
-        this.gl = gl;
+        this.gl = gl as WebGL2RenderingContext;
 
         this.getExtensions();
 
-        return gl;
+        return this.gl;
     }
 
     /**
@@ -191,7 +211,7 @@ export class ContextSystem extends System
      * @protected
      * @param {WebGLContextEvent} event - The context lost event.
      */
-    handleContextLost(event)
+    handleContextLost(event: WebGLContextEvent)
     {
         event.preventDefault();
     }
@@ -203,7 +223,7 @@ export class ContextSystem extends System
      */
     handleContextRestored()
     {
-        this.renderer.runners.contextChange.run(this.gl);
+        this.renderer.runners.contextChange.emit(this.gl);
     }
 
     destroy()
@@ -211,7 +231,7 @@ export class ContextSystem extends System
         const view = this.renderer.view;
 
         // remove listeners
-        view.removeEventListener('webglcontextlost', this.handleContextLost);
+        (view as any).removeEventListener('webglcontextlost', this.handleContextLost);
         view.removeEventListener('webglcontextrestored', this.handleContextRestored);
 
         this.gl.useProgram(null);
@@ -241,7 +261,7 @@ export class ContextSystem extends System
      * @protected
      * @param {WebGLRenderingContext} gl - Render context
      */
-    validateContext(gl)
+    validateContext(gl: WebGL2RenderingContext)
     {
         const attributes = gl.getContextAttributes();
 

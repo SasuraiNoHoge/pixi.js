@@ -1,7 +1,7 @@
-import { Runner } from '@pixi/runner';
-import { BaseTexture } from '../textures/BaseTexture';
-import { DepthResource } from '../textures/resources/DepthResource';
-import { FORMATS, TYPES } from '@pixi/constants';
+import {Runner} from '@pixi/runner';
+import {BaseTexture} from '../textures/BaseTexture';
+import {DepthResource} from '../textures/resources/DepthResource';
+import {FORMATS, MIPMAP_MODES, TYPES} from '@pixi/constants';
 
 /**
  * Frame buffer used by the BaseRenderTexture
@@ -11,11 +11,22 @@ import { FORMATS, TYPES } from '@pixi/constants';
  */
 export class Framebuffer
 {
+    width: number;
+    height: number;
+    stencil: boolean;
+    depth: boolean;
+    dirtyId: number;
+    dirtyFormat: number;
+    dirtySize: number;
+    depthTexture: BaseTexture;
+    colorTextures: Array<BaseTexture>;
+    glFramebuffers: {[key: string]: any};
+    disposeRunner: Runner;
     /**
      * @param {number} width - Width of the frame buffer
      * @param {number} height - Height of the frame buffer
      */
-    constructor(width, height)
+    constructor(width: number, height: number)
     {
         this.width = Math.ceil(width || 100);
         this.height = Math.ceil(height || 100);
@@ -32,7 +43,7 @@ export class Framebuffer
 
         this.glFramebuffers = {};
 
-        this.disposeRunner = new Runner('disposeFramebuffer', 2);
+        this.disposeRunner = new Runner('disposeFramebuffer');
     }
 
     /**
@@ -50,14 +61,14 @@ export class Framebuffer
      * Add texture to the colorTexture array
      *
      * @param {number} [index=0] - Index of the array to add the texture to
-     * @param {PIXI.Texture} [texture] - Texture to add to the array
+     * @param {PIXI.BaseTexture} [texture] - Texture to add to the array
      */
-    addColorTexture(index = 0, texture)
+    addColorTexture(index = 0, texture: BaseTexture)
     {
         // TODO add some validation to the texture - same width / height etc?
         this.colorTextures[index] = texture || new BaseTexture(null, { scaleMode: 0,
             resolution: 1,
-            mipmap: false,
+            mipmap: MIPMAP_MODES.OFF,
             width: this.width,
             height: this.height });
 
@@ -70,16 +81,16 @@ export class Framebuffer
     /**
      * Add a depth texture to the frame buffer
      *
-     * @param {PIXI.Texture} [texture] - Texture to add
+     * @param {PIXI.BaseTexture} [texture] - Texture to add
      */
-    addDepthTexture(texture)
+    addDepthTexture(texture: BaseTexture)
     {
         /* eslint-disable max-len */
         this.depthTexture = texture || new BaseTexture(new DepthResource(null, { width: this.width, height: this.height }), { scaleMode: 0,
             resolution: 1,
             width: this.width,
             height: this.height,
-            mipmap: false,
+            mipmap: MIPMAP_MODES.OFF,
             format: FORMATS.DEPTH_COMPONENT,
             type: TYPES.UNSIGNED_SHORT });
         /* eslint-disable max-len */
@@ -121,7 +132,7 @@ export class Framebuffer
      * @param {number} width - Width of the frame buffer to resize to
      * @param {number} height - Height of the frame buffer to resize to
      */
-    resize(width, height)
+    resize(width: number, height: number)
     {
         width = Math.ceil(width);
         height = Math.ceil(height);
@@ -156,6 +167,6 @@ export class Framebuffer
      */
     dispose()
     {
-        this.disposeRunner.run(this, false);
+        this.disposeRunner.emit(this, false);
     }
 }

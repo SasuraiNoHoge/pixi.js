@@ -70,7 +70,7 @@ export class BaseTexture extends EventEmitter
     touched: number;
     isPowerOfTwo: boolean;
 
-    protected _glTextures: { [key: number]: GLTexture };
+    _glTextures: { [key: number]: GLTexture };
     dirtyId: number;
     dirtyStyleId: number;
     cacheId: string;
@@ -78,8 +78,8 @@ export class BaseTexture extends EventEmitter
     readonly textureCacheIds: Array<string>;
     readonly destroyed: boolean;
     resource: Resource;
-    protected _batchEnabled: number;
-    protected _batchLocation: number;
+    _batchEnabled: number;
+    _batchLocation: number;
 
     constructor(resource: Resource | ImageSource | string | any = null, options: IBaseTextureOptions = null)
     {
@@ -574,6 +574,14 @@ export class BaseTexture extends EventEmitter
     dispose()
     {
         this.emit('dispose', this);
+    }
+
+    /**
+     * Utility function for BaseTexture|Texture cast
+     */
+    castToBaseTexture()
+    {
+        return this;
     }
 
     /**

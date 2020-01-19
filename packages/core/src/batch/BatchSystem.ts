@@ -1,6 +1,8 @@
 import { System } from '../System';
 import { ObjectRenderer } from './ObjectRenderer';
 
+import { Renderer, BaseTexture, BatchTextureArray } from '@pixi/core';
+
 /**
  * System plugin to the renderer to manage batching.
  *
@@ -10,10 +12,13 @@ import { ObjectRenderer } from './ObjectRenderer';
  */
 export class BatchSystem extends System
 {
+    readonly emptyRenderer: ObjectRenderer;
+    currentRenderer: ObjectRenderer;
+
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -37,7 +42,7 @@ export class BatchSystem extends System
      *
      * @param {PIXI.ObjectRenderer} objectRenderer - The object renderer to use.
      */
-    setObjectRenderer(objectRenderer)
+    setObjectRenderer(objectRenderer: ObjectRenderer)
     {
         if (this.currentRenderer === objectRenderer)
         {
@@ -74,7 +79,7 @@ export class BatchSystem extends System
      * @param arr
      * @param maxTextures
      */
-    copyBoundTextures(arr, maxTextures)
+    copyBoundTextures(arr: Array<BaseTexture>, maxTextures: number)
     {
         const { boundTextures } = this.renderer.texture;
 
@@ -98,7 +103,7 @@ export class BatchSystem extends System
      * @param {number} batchId marker for _batchEnabled param of textures in texArray
      * @param {number} maxTextures number of texture locations to manipulate
      */
-    boundArray(texArray, boundTextures, batchId, maxTextures)
+    boundArray(texArray: BatchTextureArray, boundTextures: Array<BaseTexture>, batchId: number, maxTextures: number)
     {
         const { elements, ids, count } = texArray;
         let j = 0;

@@ -610,6 +610,14 @@ export class Texture extends EventEmitter
         return this.orig.height;
     }
 
+    /**
+     * Utility function for BaseTexture|Texture cast
+     */
+    castToBaseTexture()
+    {
+        return this.baseTexture;
+    }
+
     static readonly EMPTY: Texture;
     static readonly WHITE: Texture;
 }

@@ -1,11 +1,38 @@
 import { hex2string, hex2rgb, deprecation, EventEmitter } from '@pixi/utils';
 import { Matrix, Rectangle } from '@pixi/math';
-import { RENDERER_TYPE } from '@pixi/constants';
+import { RENDERER_TYPE, SCALE_MODES } from '@pixi/constants';
 import { settings } from '@pixi/settings';
-import { Container } from '@pixi/display';
+import { DisplayObject, TemporaryDisplayObject } from '@pixi/display';
 import { RenderTexture } from './renderTexture/RenderTexture';
 
 const tempMatrix = new Matrix();
+
+export interface IRendererOptions
+{
+    width?: number;
+    height?: number;
+    view?: HTMLCanvasElement;
+    transparent?: boolean | 'notMultiplied';
+    autoDensity?: boolean;
+    antialias?: boolean;
+    resolution?: number;
+    preserveDrawingBuffer?: boolean;
+    clearBeforeRender?: boolean;
+    backgroundColor?: number;
+    powerPreference?: WebGLPowerPreference;
+    context?: WebGL2RenderingContext;
+}
+
+interface IRendererOptionsLegacy extends IRendererOptions
+{
+    autoResize?: boolean;
+    roundPixels?: boolean;
+}
+
+export interface IRendererPlugins
+{
+    [key: string]: any;
+}
 
 /**
  * The AbstractRenderer is the base for a PixiJS Renderer. It is extended by the {@link PIXI.CanvasRenderer}
@@ -16,11 +43,24 @@ const tempMatrix = new Matrix();
  * @extends PIXI.utils.EventEmitter
  * @memberof PIXI
  */
-export class AbstractRenderer extends EventEmitter
+export abstract class AbstractRenderer extends EventEmitter
 {
     _backgroundColor: number;
     _backgroundColorRgba: number[];
+    _backgroundColorString: string;
+
+    options: IRendererOptions;
+    readonly type: RENDERER_TYPE;
+    readonly screen: Rectangle;
     readonly view: HTMLCanvasElement;
+    resolution: number;
+    readonly transparent: boolean | 'notMultiplied';
+    readonly autoDensity: boolean;
+    readonly preserveDrawingBuffer: boolean;
+    clearBeforeRender?: boolean;
+    readonly _tempDisplayObjectParent: DisplayObject;
+    _lastObjectRendered: any;
+    plugins: IRendererPlugins;
 
     /**
      * @param {string} system - The name of the system this renderer is for.
@@ -41,7 +81,7 @@ export class AbstractRenderer extends EventEmitter
      * @param {number} [options.backgroundColor=0x000000] - The background color of the rendered area
      *  (shown if not transparent).
      */
-    constructor(system, options)
+    constructor(type: RENDERER_TYPE = RENDERER_TYPE.UNKNOWN, options?: IRendererOptions)
     {
         super();
 
@@ -49,9 +89,9 @@ export class AbstractRenderer extends EventEmitter
         options = Object.assign({}, settings.RENDER_OPTIONS, options);
 
         // Deprecation notice for renderer roundPixels option
-        if (options.roundPixels)
+        if ((options as IRendererOptionsLegacy).roundPixels)
         {
-            settings.ROUND_PIXELS = options.roundPixels;
+            settings.ROUND_PIXELS = (options as IRendererOptionsLegacy).roundPixels;
             deprecation('5.0.0', 'Renderer roundPixels option is deprecated, please use PIXI.settings.ROUND_PIXELS', 2);
         }
 
@@ -70,7 +110,7 @@ export class AbstractRenderer extends EventEmitter
          * @default PIXI.RENDERER_TYPE.UNKNOWN
          * @see PIXI.RENDERER_TYPE
          */
-        this.type = RENDERER_TYPE.UNKNOWN;
+        this.type = type;
 
         /**
          * Measurements of the screen. (0, 0, screenWidth, screenHeight).
@@ -108,7 +148,7 @@ export class AbstractRenderer extends EventEmitter
          *
          * @member {boolean}
          */
-        this.autoDensity = options.autoDensity || options.autoResize || false;
+        this.autoDensity = options.autoDensity || (options as IRendererOptionsLegacy).autoResize || false;
         // autoResize is deprecated, provides fallback support
 
         /**
@@ -163,7 +203,7 @@ export class AbstractRenderer extends EventEmitter
          * @member {PIXI.DisplayObject}
          * @protected
          */
-        this._tempDisplayObjectParent = new Container();
+        this._tempDisplayObjectParent = new TemporaryDisplayObject();
 
         /**
          * The last root object that the renderer tried to render.
@@ -187,7 +227,7 @@ export class AbstractRenderer extends EventEmitter
      * @protected
      * @param {object} staticMap - The dictionary of statically saved plugins.
      */
-    initPlugins(staticMap)
+    initPlugins(staticMap: IRendererPlugins)
     {
         for (const o in staticMap)
         {
@@ -226,7 +266,7 @@ export class AbstractRenderer extends EventEmitter
      * @param {number} screenWidth - The new width of the screen.
      * @param {number} screenHeight - The new height of the screen.
      */
-    resize(screenWidth, screenHeight)
+    resize(screenWidth: number, screenHeight: number)
     {
         this.screen.width = screenWidth;
         this.screen.height = screenHeight;
@@ -252,7 +292,7 @@ export class AbstractRenderer extends EventEmitter
      *        if no region is specified, defaults to the local bounds of the displayObject.
      * @return {PIXI.RenderTexture} A texture of the graphics object.
      */
-    generateTexture(displayObject, scaleMode, resolution, region)
+    generateTexture(displayObject: DisplayObject, scaleMode?: SCALE_MODES, resolution?: number, region?: Rectangle)
     {
         region = region || displayObject.getLocalBounds();
 
@@ -260,7 +300,12 @@ export class AbstractRenderer extends EventEmitter
         if (region.width === 0) region.width = 1;
         if (region.height === 0) region.height = 1;
 
-        const renderTexture = RenderTexture.create(region.width | 0, region.height | 0, scaleMode, resolution);
+        const renderTexture = RenderTexture.create(
+        {
+            width: region.width | 0,
+            height: region.height | 0,
+            scaleMode, resolution
+        });
 
         tempMatrix.tx = -region.x;
         tempMatrix.ty = -region.y;
@@ -270,12 +315,15 @@ export class AbstractRenderer extends EventEmitter
         return renderTexture;
     }
 
+    abstract render(displayObject: DisplayObject, renderTexture?: RenderTexture,
+                    clear?: boolean, transform?: Matrix, skipUpdateTransform?: boolean): void;
+
     /**
      * Removes everything from the renderer and optionally removes the Canvas DOM element.
      *
      * @param {boolean} [removeView=false] - Removes the Canvas element from the DOM.
      */
-    destroy(removeView)
+    destroy(removeView?: boolean)
     {
         for (const o in this.plugins)
         {
@@ -288,32 +336,18 @@ export class AbstractRenderer extends EventEmitter
             this.view.parentNode.removeChild(this.view);
         }
 
+        const thisAny = this as any;
+
+        // null-ing all objects, that's a tradition!
+
         this.plugins = null;
-
-        this.type = RENDERER_TYPE.UNKNOWN;
-
-        this.view = null;
-
-        this.screen = null;
-
-        this.resolution = 0;
-
-        this.transparent = false;
-
-        this.autoDensity = false;
-
-        this.blendModes = null;
-
+        thisAny.type = RENDERER_TYPE.UNKNOWN;
+        thisAny.view = null;
+        thisAny.screen = null;
+        thisAny._tempDisplayObjectParent = null;
         this.options = null;
-
-        this.preserveDrawingBuffer = false;
-        this.clearBeforeRender = false;
-
-        this._backgroundColor = 0;
         this._backgroundColorRgba = null;
         this._backgroundColorString = null;
-
-        this._tempDisplayObjectParent = null;
         this._lastObjectRendered = null;
     }
 

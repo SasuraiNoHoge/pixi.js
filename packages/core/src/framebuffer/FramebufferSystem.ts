@@ -4,6 +4,8 @@ import { ENV } from '@pixi/constants';
 import { settings } from '../settings';
 import { Framebuffer } from './Framebuffer';
 
+import { Renderer } from '@pixi/core';
+
 /**
  * System plugin to the renderer to manage framebuffers.
  *
@@ -13,10 +15,19 @@ import { Framebuffer } from './Framebuffer';
  */
 export class FramebufferSystem extends System
 {
+    readonly managedFramebuffers: Array<Framebuffer>;
+    readonly unknownFramebuffer: Framebuffer;
+    CONTEXT_UID: number;
+    current: Framebuffer;
+    viewport: Rectangle;
+    hasMRT: boolean;
+    writeDepthTexture: boolean;
+    gl: WebGL2RenderingContext;
+
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -90,7 +101,7 @@ export class FramebufferSystem extends System
      * @param {PIXI.Framebuffer} framebuffer
      * @param {PIXI.Rectangle} [frame] frame, default is framebuffer size
      */
-    bind(framebuffer, frame)
+    bind(framebuffer?: Framebuffer, frame?: Rectangle)
     {
         const { gl } = this;
 
@@ -126,9 +137,9 @@ export class FramebufferSystem extends System
 
             for (let i = 0; i < framebuffer.colorTextures.length; i++)
             {
-                if (framebuffer.colorTextures[i].texturePart)
+                if ((framebuffer.colorTextures[i] as any).texturePart)
                 {
-                    this.renderer.texture.unbind(framebuffer.colorTextures[i].texture);
+                    this.renderer.texture.unbind(framebuffer.colorTextures[i]);
                 }
                 else
                 {
@@ -177,7 +188,7 @@ export class FramebufferSystem extends System
      * @param {Number} width - Width of viewport
      * @param {Number} height - Height of viewport
      */
-    setViewport(x, y, width, height)
+    setViewport(x: number, y: number, width: number, height: number)
     {
         const v = this.viewport;
 
@@ -217,7 +228,7 @@ export class FramebufferSystem extends System
      * @param {Number} b - Blue value from 0 to 1
      * @param {Number} a - Alpha value from 0 to 1
      */
-    clear(r, g, b, a)
+    clear(r: number, g: number, b: number, a: number)
     {
         const { gl } = this;
 
@@ -232,14 +243,14 @@ export class FramebufferSystem extends System
      * @protected
      * @param {PIXI.Framebuffer} framebuffer
      */
-    initFramebuffer(framebuffer)
+    initFramebuffer(framebuffer: Framebuffer)
     {
         const { gl } = this;
 
         // TODO - make this a class?
         const fbo = {
             framebuffer: gl.createFramebuffer(),
-            stencil: null,
+            stencil: null as any,
             dirtyId: 0,
             dirtyFormat: 0,
             dirtySize: 0,
@@ -259,7 +270,7 @@ export class FramebufferSystem extends System
      * @protected
      * @param {PIXI.Framebuffer} framebuffer
      */
-    resizeFramebuffer(framebuffer)
+    resizeFramebuffer(framebuffer: Framebuffer)
     {
         const { gl } = this;
 
@@ -290,7 +301,7 @@ export class FramebufferSystem extends System
      * @protected
      * @param {PIXI.Framebuffer} framebuffer
      */
-    updateFramebuffer(framebuffer)
+    updateFramebuffer(framebuffer: Framebuffer)
     {
         const { gl } = this;
 
@@ -312,14 +323,15 @@ export class FramebufferSystem extends System
         {
             const texture = framebuffer.colorTextures[i];
 
-            if (texture.texturePart)
+            if ((texture as any).texturePart)
             {
-                this.renderer.texture.bind(texture.texture, 0);
+                //@popelyshev: make an example, I'm not sure that this part works at all
+                this.renderer.texture.bind(texture, 0);
 
                 gl.framebufferTexture2D(gl.FRAMEBUFFER,
                     gl.COLOR_ATTACHMENT0 + i,
-                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X + texture.side,
-                    texture.texture._glTextures[this.CONTEXT_UID].texture,
+                    gl.TEXTURE_CUBE_MAP_NEGATIVE_X + (texture as any).side,
+                    texture._glTextures[this.CONTEXT_UID].texture,
                     0);
             }
             else
@@ -379,7 +391,7 @@ export class FramebufferSystem extends System
      * @param {PIXI.Framebuffer} framebuffer framebuffer that has to be disposed of
      * @param {boolean} [contextLost=false] If context was lost, we suppress all delete function calls
      */
-    disposeFramebuffer(framebuffer, contextLost)
+    disposeFramebuffer(framebuffer: Framebuffer, contextLost?: boolean)
     {
         const fbo = framebuffer.glFramebuffers[this.CONTEXT_UID];
         const gl = this.gl;
@@ -414,11 +426,11 @@ export class FramebufferSystem extends System
      * Disposes all framebuffers, but not textures bound to them
      * @param {boolean} [contextLost=false] If context was lost, we suppress all delete function calls
      */
-    disposeAll(contextLost)
+    disposeAll(contextLost?: boolean)
     {
         const list = this.managedFramebuffers;
 
-        this.managedFramebuffers = [];
+        (this.managedFramebuffers as any) = [];
 
         for (let i = 0; i < list.length; i++)
         {
