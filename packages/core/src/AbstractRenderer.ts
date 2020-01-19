@@ -301,11 +301,11 @@ export abstract class AbstractRenderer extends EventEmitter
         if (region.height === 0) region.height = 1;
 
         const renderTexture = RenderTexture.create(
-        {
-            width: region.width | 0,
-            height: region.height | 0,
-            scaleMode, resolution
-        });
+            {
+                width: region.width | 0,
+                height: region.height | 0,
+                scaleMode, resolution,
+            });
 
         tempMatrix.tx = -region.x;
         tempMatrix.ty = -region.y;

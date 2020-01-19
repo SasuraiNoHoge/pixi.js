@@ -1,5 +1,5 @@
 import { Attribute } from './Attribute';
-import {Buffer, IArrayBuffer } from './Buffer';
+import { Buffer, IArrayBuffer } from './Buffer';
 import { interleaveTypedArrays } from './utils/interleaveTypedArrays';
 import { getBufferType } from './utils/getBufferType';
 import { TYPES } from '@pixi/constants';
@@ -105,7 +105,7 @@ export class Geometry
     * @return {PIXI.Geometry} returns self, useful for chaining.
     */
     addAttribute(id: string, buffer: Buffer|Float32Array|Uint32Array|Array<number>, size = 0, normalized = false,
-                 type?: TYPES, stride = 0, start = 0, instance = false)
+        type?: TYPES, stride = 0, start = 0, instance = false)
     {
         if (!buffer)
         {

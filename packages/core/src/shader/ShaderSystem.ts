@@ -9,7 +9,7 @@ import { Renderer } from '../Renderer';
 import { Shader } from './Shader';
 import { Program } from './Program';
 
-import  {UniformGroup } from './UniformGroup';
+import  { UniformGroup } from './UniformGroup';
 
 let UID = 0;
 // defualt sync data so we don't create a new one each time!
@@ -29,7 +29,7 @@ export class ShaderSystem extends System
     program: Program;
     cache: { [key: string]: Function };
     id: number;
-    destroyed: boolean = false;
+    destroyed = false;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.
      */

@@ -729,7 +729,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
      * @param {number} iIndex - number of indices already in `indexBuffer`
      */
     packInterleavedGeometry(element: any, attributeBuffer: ViewableBuffer, indexBuffer: Uint16Array,
-                            aIndex: number, iIndex: number)
+        aIndex: number, iIndex: number)
     {
         const {
             uint32View,

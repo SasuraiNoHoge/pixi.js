@@ -3,11 +3,11 @@ import { GLBuffer } from './GLBuffer';
 import { ENV } from '@pixi/constants';
 import { settings } from '../settings';
 
-import { Geometry, Shader, Renderer, Program } from "@pixi/core";
+import { Geometry, Shader, Renderer, Program } from '@pixi/core';
 import { DRAW_MODES } from '@pixi/constants';
 import { Buffer } from './Buffer';
 
-const byteSizeMap : {[key: number]: number} = { 5126: 4, 5123: 2, 5121: 1 };
+const byteSizeMap: {[key: number]: number} = { 5126: 4, 5123: 2, 5121: 1 };
 
 /**
  * System plugin to the renderer to manage geometry.
@@ -113,19 +113,13 @@ export class GeometrySystem extends System
             {
                 (this as any).hasVao = false;
                 gl.createVertexArray = () =>
-                {
-                    return null;
-                };
+                    null;
 
                 gl.bindVertexArray = () =>
-                {
-                    return null;
-                };
+                    null;
 
                 gl.deleteVertexArray = () =>
-                {
-                    return null;
-                };
+                    null;
             }
         }
 

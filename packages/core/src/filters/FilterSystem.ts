@@ -9,7 +9,7 @@ import { DRAW_MODES } from '@pixi/constants';
 import { FilterState } from './FilterState';
 import { Filter } from './Filter';
 import { IFilterTarget } from './IFilterTarget';
-import {Renderer, RenderTexture, ISpriteMaskTarget} from "@pixi/core";
+import { Renderer, RenderTexture, ISpriteMaskTarget } from '@pixi/core';
 
 /**
  * System plugin to the renderer to manage the filters.

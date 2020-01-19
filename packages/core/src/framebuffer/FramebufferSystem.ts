@@ -325,7 +325,7 @@ export class FramebufferSystem extends System
 
             if ((texture as any).texturePart)
             {
-                //@popelyshev: make an example, I'm not sure that this part works at all
+                // @popelyshev: make an example, I'm not sure that this part works at all
                 this.renderer.texture.bind(texture, 0);
 
                 gl.framebufferTexture2D(gl.FRAMEBUFFER,

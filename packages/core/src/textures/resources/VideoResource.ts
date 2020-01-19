@@ -143,7 +143,7 @@ export class VideoResource extends BaseImageResource
             this._msToNextUpdate = Math.floor(this._msToNextUpdate - elapsedMS);
             if (!this._updateFPS || this._msToNextUpdate <= 0)
             {
-                super.update(/*deltaTime*/);
+                super.update(/* deltaTime*/);
                 this._msToNextUpdate = this._updateFPS ? Math.floor(1000 / this._updateFPS) : 0;
             }
         }

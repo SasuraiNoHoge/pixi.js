@@ -16,7 +16,7 @@ import { GLProgram } from './GLProgram';
 
 let UID = 0;
 
-const nameCache : { [key: string]: number } = {};
+const nameCache: { [key: string]: number } = {};
 
 /**
  * Helper class to create a shader program.

@@ -158,7 +158,7 @@ export class Filter extends Shader
      * @param {string} [fragmentSrc] - The source of the fragment shader.
      * @param {object} [uniforms] - Custom uniforms to use to augment the built-in ones.
      */
-    constructor(vertexSrc?: string, fragmentSrc?: string, uniforms?: {[key:string]: any})
+    constructor(vertexSrc?: string, fragmentSrc?: string, uniforms?: {[key: string]: any})
     {
         const program = Program.from(vertexSrc || Filter.defaultVertexSrc,
             fragmentSrc || Filter.defaultFragmentSrc);
@@ -223,9 +223,9 @@ export class Filter extends Shader
      *        target, filters, sourceFrame, destinationFrame, renderTarget, resolution
      */
     apply(filterManager: FilterSystem, input: RenderTexture, output: RenderTexture, clear: boolean,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
-          // @ts-ignore
-          currentState?: FilterState)
+        // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+        // @ts-ignore
+        currentState?: FilterState)
     {
         // do as you please!
 

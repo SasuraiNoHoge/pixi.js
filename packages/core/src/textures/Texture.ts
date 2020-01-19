@@ -1,4 +1,4 @@
-import {BaseTexture, IBaseTextureOptions} from './BaseTexture';
+import { BaseTexture, IBaseTextureOptions } from './BaseTexture';
 import { ImageResource } from './resources/ImageResource';
 import { CanvasResource } from './resources/CanvasResource';
 import { TextureUvs } from './TextureUvs';

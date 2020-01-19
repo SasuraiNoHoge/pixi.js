@@ -40,7 +40,7 @@ export class Renderer extends AbstractRenderer
     globalUniforms: UniformGroup;
     CONTEXT_UID: number;
 
-    //systems
+    // systems
     mask: MaskSystem;
     context: ContextSystem;
     state: StateSystem;

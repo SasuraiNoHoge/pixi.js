@@ -1,4 +1,4 @@
-import {BaseTexture, IBaseTextureOptions} from '../textures/BaseTexture';
+import { BaseTexture, IBaseTextureOptions } from '../textures/BaseTexture';
 import { Framebuffer } from '../framebuffer/Framebuffer';
 
 /**

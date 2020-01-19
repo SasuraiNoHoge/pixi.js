@@ -75,7 +75,7 @@ export class RenderTexturePool
      */
     getOptimalTexture(minWidth: number, minHeight: number, resolution = 1)
     {
-        let key : number|string = RenderTexturePool.SCREEN_KEY;
+        let key: number|string = RenderTexturePool.SCREEN_KEY;
 
         minWidth *= resolution;
         minHeight *= resolution;

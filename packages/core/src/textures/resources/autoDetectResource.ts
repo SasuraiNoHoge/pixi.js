@@ -26,7 +26,7 @@ import { ImageResource } from './ImageResource';
  * @static
  * @readonly
  */
-//TODO: @popelyshev change to `typeof Resource` or something with `static test` method
+// TODO: @popelyshev change to `typeof Resource` or something with `static test` method
 export const INSTALLED: Array<any> = [];
 
 /**
