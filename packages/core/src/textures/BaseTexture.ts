@@ -1,7 +1,9 @@
 import { BaseTextureCache, EventEmitter, isPow2, TextureCache, uid } from '@pixi/utils';
 import { FORMATS, SCALE_MODES, TARGETS, TYPES, ALPHA_MODES, MIPMAP_MODES, WRAP_MODES } from '@pixi/constants';
 
-import { Resource, BufferResource, ImageSource, autoDetectResource } from './resources';
+import { Resource } from './resources/Resource';
+import { BufferResource } from './resources/BufferResource';
+import { autoDetectResource } from './resources/autoDetectResource';
 import { GLTexture } from './GLTexture';
 
 import { settings } from '@pixi/settings';
@@ -11,6 +13,8 @@ const defaultBufferOptions = {
     format: FORMATS.RGBA,
     alphaMode: ALPHA_MODES.NPM,
 };
+
+export type ImageSource = HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|ImageBitmap;
 
 export interface IBaseTextureOptions {
     alphaMode?: ALPHA_MODES;

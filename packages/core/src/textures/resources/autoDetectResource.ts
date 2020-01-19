@@ -1,7 +1,5 @@
 import { ImageResource } from './ImageResource';
 
-import { Resource } from './Resource';
-
 /**
  * Collection of installed resource types, class must extend {@link PIXI.resources.Resource}.
  * @example
@@ -28,7 +26,8 @@ import { Resource } from './Resource';
  * @static
  * @readonly
  */
-export const INSTALLED: Array<typeof Resource> = [];
+//TODO: @popelyshev change to `typeof Resource` or something with `static test` method
+export const INSTALLED: Array<any> = [];
 
 /**
  * Create a resource element from a single source element. This

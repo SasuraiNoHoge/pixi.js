@@ -1,3 +1,5 @@
+import { Renderer } from '@pixi/core';
+
 /**
  * Base for a common object renderer that can be used as a
  * system renderer plugin.
@@ -8,10 +10,11 @@
  */
 export class ObjectRenderer
 {
+    renderer: Renderer;
     /**
      * @param {PIXI.Renderer} renderer - The renderer this manager works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         /**
          * The renderer this manager works for.
@@ -65,7 +68,9 @@ export class ObjectRenderer
      *
      * @param {PIXI.DisplayObject} object - The object to render.
      */
-    render(object) // eslint-disable-line no-unused-vars
+    // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
+    // @ts-ignore
+    render(object: any)
     {
         // render the object
     }

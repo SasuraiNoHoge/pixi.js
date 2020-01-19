@@ -76,7 +76,7 @@ export class FramebufferSystem extends System
 
             if (nativeDrawBuffersExtension)
             {
-                gl.drawBuffers = (activeTextures) =>
+                gl.drawBuffers = (activeTextures: number[]) =>
                     nativeDrawBuffersExtension.drawBuffersWEBGL(activeTextures);
             }
             else

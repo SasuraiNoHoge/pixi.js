@@ -1,4 +1,5 @@
-import { DRAW_MODES } from '@pixi/constants';
+import { DRAW_MODES, BLEND_MODES } from '@pixi/constants';
+import { BatchTextureArray } from './BatchTextureArray';
 
 /**
  * Used by the batcher to draw batches.
@@ -9,6 +10,13 @@ import { DRAW_MODES } from '@pixi/constants';
  */
 export class BatchDrawCall
 {
+    texArray: BatchTextureArray;
+    type: DRAW_MODES;
+    blend: BLEND_MODES;
+    start: number;
+    size: number;
+    data: any;
+
     constructor()
     {
         this.texArray = null;

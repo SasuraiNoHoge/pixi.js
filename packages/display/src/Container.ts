@@ -578,7 +578,7 @@ export class Container extends DisplayObject
 
         if (mask)
         {
-            renderer.mask.pop(this, this._mask);
+            renderer.mask.pop(this);
         }
 
         if (filters && this._enabledFilters && this._enabledFilters.length)

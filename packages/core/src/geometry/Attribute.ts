@@ -60,7 +60,7 @@ export class Attribute
      *
      * @returns {PIXI.Attribute} A new {@link PIXI.Attribute} based on the information provided
      */
-    static from(buffer: string, size?: number, normalized?: boolean, type?: TYPES, stride?: number)
+    static from(buffer: number, size?: number, normalized?: boolean, type?: TYPES, stride?: number)
     {
         return new Attribute(buffer, size, normalized, type, stride);
     }

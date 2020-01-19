@@ -100,7 +100,7 @@ export class Resource
         // have the width and height of the resource
         if (this._width || this._height)
         {
-            this.onResize.run(this._width, this._height);
+            this.onResize.emit(this._width, this._height);
         }
     }
 

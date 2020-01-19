@@ -2,9 +2,7 @@ import { Resource } from './Resource';
 import { determineCrossOrigin } from '@pixi/utils';
 import { ALPHA_MODES } from '@pixi/constants';
 
-import { BaseTexture, Renderer, GLTexture } from '@pixi/core';
-
-export type ImageSource = HTMLImageElement|HTMLCanvasElement|HTMLVideoElement|ImageBitmap;
+import { BaseTexture, Renderer, GLTexture, ImageSource } from '@pixi/core';
 
 /**
  * Base for all the image/canvas resources

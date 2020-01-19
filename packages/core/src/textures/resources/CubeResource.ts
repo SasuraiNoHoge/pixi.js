@@ -1,9 +1,8 @@
 import { ArrayResource } from './ArrayResource';
-import { ImageSource } from "./BaseImageResource";
 import { Resource } from './Resource';
 import { TARGETS } from '@pixi/constants';
 
-import { BaseTexture, Renderer, GLTexture } from '@pixi/core';
+import { BaseTexture, Renderer, GLTexture, ImageSource } from '@pixi/core';
 
 /**
  * Resource for a CubeTexture which contains six resources.

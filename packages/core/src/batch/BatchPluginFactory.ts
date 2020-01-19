@@ -5,6 +5,16 @@ import { AbstractBatchRenderer } from './AbstractBatchRenderer';
 import defaultVertex from './texture.vert';
 import defaultFragment from './texture.frag';
 
+import { Renderer } from '@pixi/core';
+
+export interface IBatchFactoryOptions
+{
+    vertex?: string;
+    fragment?: string;
+    geometryClass?: typeof BatchGeometry;
+    vertexSize?: number;
+}
+
 /**
  * @class
  * @memberof PIXI
@@ -41,7 +51,7 @@ export class BatchPluginFactory
      * @param {object} [options.geometryClass=PIXI.BatchGeometry]
      * @return {*} New batch renderer plugin
      */
-    static create(options)
+    static create(options?: IBatchFactoryOptions): typeof AbstractBatchRenderer
     {
         const { vertex, fragment, vertexSize, geometryClass } = Object.assign({
             vertex: defaultVertex,
@@ -52,7 +62,7 @@ export class BatchPluginFactory
 
         return class BatchPlugin extends AbstractBatchRenderer
         {
-            constructor(renderer)
+            constructor(renderer: Renderer)
             {
                 super(renderer);
 

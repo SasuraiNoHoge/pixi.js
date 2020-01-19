@@ -11,11 +11,15 @@ import { Matrix } from '@pixi/math';
  */
 export class BatchShaderGenerator
 {
+    vertexSrc: string;
+    fragTemplate: string;
+    programCache: {[key: number]: any};
+    defaultGroupCache: {[key: number]: any};
     /**
      * @param {string} vertexSrc - Vertex shader
      * @param {string} fragTemplate - Fragment shader template
      */
-    constructor(vertexSrc, fragTemplate)
+    constructor(vertexSrc: string, fragTemplate: string)
     {
         /**
          * Reference to the vertex shader source.
@@ -45,7 +49,7 @@ export class BatchShaderGenerator
         }
     }
 
-    generateShader(maxTextures)
+    generateShader(maxTextures: number)
     {
         if (!this.programCache[maxTextures])
         {
@@ -75,7 +79,7 @@ export class BatchShaderGenerator
         return new Shader(this.programCache[maxTextures], uniforms);
     }
 
-    generateSampleSrc(maxTextures)
+    generateSampleSrc(maxTextures: number)
     {
         let src = '';
 

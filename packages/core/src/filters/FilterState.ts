@@ -1,13 +1,7 @@
 import { Filter } from './Filter';
+import { IFilterTarget } from './IFilterTarget';
 import { RenderTexture } from "@pixi/core";
 import { Rectangle } from "@pixi/math";
-
-
-export interface IFilterTarget
-{
-    filterArea: Rectangle;
-    getBounds(skipUpdate?: boolean): Rectangle;
-}
 
 /**
  * System plugin to the renderer to manage filter states.

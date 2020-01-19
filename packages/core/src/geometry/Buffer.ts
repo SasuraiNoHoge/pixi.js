@@ -76,7 +76,7 @@ export class Buffer
      * flags this buffer as requiring an upload to the GPU
      * @param {ArrayBuffer|SharedArrayBuffer|ArrayBufferView} [data] the data to update in the buffer.
      */
-    update(data: ITypedArray)
+    update(data: IArrayBuffer)
     {
         this.data = (data as ITypedArray) || this.data;
         this._updateID++;

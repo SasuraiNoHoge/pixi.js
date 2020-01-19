@@ -265,7 +265,7 @@ export class Texture extends EventEmitter
      *
      * @param {boolean} [destroyBase=false] Whether to destroy the base texture as well
      */
-    destroy(destroyBase: boolean)
+    destroy(destroyBase?: boolean)
     {
         if (this.baseTexture)
         {

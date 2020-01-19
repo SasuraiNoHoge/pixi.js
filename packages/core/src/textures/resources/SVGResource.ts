@@ -143,7 +143,7 @@ export class SVGResource extends BaseImageResource
         tempImage.onerror = (event) =>
         {
             tempImage.onerror = null;
-            this.onError.run(event);
+            this.onError.emit(event);
         };
 
         tempImage.onload = (): void =>

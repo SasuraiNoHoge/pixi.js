@@ -10,6 +10,8 @@ import { Buffer } from '../geometry/Buffer';
  */
 export class BatchGeometry extends Geometry
 {
+    _buffer: Buffer;
+    _indexBuffer: Buffer;
     /**
      * @param {boolean} [_static=false] Optimization flag, where `false`
      *        is updated every frame, `true` doesn't change frame-to-frame.

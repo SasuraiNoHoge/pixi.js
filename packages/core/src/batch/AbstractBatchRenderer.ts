@@ -11,6 +11,10 @@ import { settings } from '@pixi/settings';
 import { premultiplyBlendMode, premultiplyTint, nextPow2, log2 } from '@pixi/utils';
 import { ENV } from '@pixi/constants';
 
+import { Renderer, Shader } from '@pixi/core';
+import { BatchShaderGenerator } from './BatchShaderGenerator';
+import { BatchGeometry } from './BatchGeometry';
+
 /**
  * Renderer dedicated to drawing and batching sprites.
  *
@@ -26,13 +30,42 @@ import { ENV } from '@pixi/constants';
  */
 export class AbstractBatchRenderer extends ObjectRenderer
 {
+    shaderGenerator: BatchShaderGenerator;
+    geometryClass: typeof BatchGeometry;
+    vertexSize: number;
+    state: State;
+    size: number;
+    _vertexCount: number;
+    _indexCount: number;
+    _bufferedElements: Array<any>;
+    _bufferedTextures: Array<BaseTexture>;
+    _bufferSize: number;
+    protected _shader: Shader;
+    private _packedGeometries: Array<BatchGeometry>;
+    private _packedGeometryPoolSize: number;
+
+    protected _flushId: number;
+    protected _aBuffers: Array<ViewableBuffer>;
+    protected _iBuffers: Array<Uint16Array>;
+    MAX_TEXTURES: number;
+
+    protected _dcIndex: number;
+    protected _aIndex: number;
+    protected _iIndex: number;
+    protected _attributeBuffer: ViewableBuffer;
+    protected _indexBuffer: Uint16Array;
+    protected _tempBoundTextures: BaseTexture[];
+
+    _drawCallPool: any;
+    _textureCallPool: any;
+
     /**
      * This will hook onto the renderer's `contextChange`
      * and `prerender` signals.
      *
      * @param {PIXI.Renderer} renderer - The renderer this works for.
      */
-    constructor(renderer)
+    constructor(renderer: Renderer)
     {
         super(renderer);
 
@@ -201,7 +234,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
          * @private
          * @see PIXI.AbstractBatchRenderer#getAttributeBuffer
          */
-        this._aBuffers = {};
+        this._aBuffers = {} as any;
 
         /**
          * Pool of `Uint16Array` objects that are sorted in
@@ -216,7 +249,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
          * @private
          * @see PIXI.AbstractBatchRenderer#getIndexBuffer
          */
-        this._iBuffers = {};
+        this._iBuffers = {} as any;
 
         /**
          * Maximum number of textures that can be uploaded to
@@ -325,7 +358,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
      * @param {PIXI.DisplayObject} element - the element to render when
      *    using this renderer
      */
-    render(element)
+    render(element: any)
     {
         if (!element._texture.valid)
         {
@@ -409,7 +442,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
      * @param {number} start
      * @param {number} finish
      */
-    buildDrawCalls(texArray, start, finish)
+    buildDrawCalls(texArray: BatchTextureArray, start: number, finish: number)
     {
         const {
             _bufferedElements: elements,
@@ -469,7 +502,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
      *
      * @param {PIXI.BatchTextureArray} texArray
      */
-    bindAndClearTexArray(texArray)
+    bindAndClearTexArray(texArray: BatchTextureArray)
     {
         const textureSystem = this.renderer.texture;
 
@@ -628,7 +661,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
      * @return {ViewableBuffer} - buffer than can hold atleast `size` floats
      * @private
      */
-    getAttributeBuffer(size)
+    getAttributeBuffer(size: number)
     {
         // 8 vertices is enough for 2 quads
         const roundedP2 = nextPow2(Math.ceil(size / 8));
@@ -659,7 +692,7 @@ export class AbstractBatchRenderer extends ObjectRenderer
      *    indices.
      * @private
      */
-    getIndexBuffer(size)
+    getIndexBuffer(size: number)
     {
         // 12 indices is enough for 2 quads
         const roundedP2 = nextPow2(Math.ceil(size / 12));
@@ -695,7 +728,8 @@ export class AbstractBatchRenderer extends ObjectRenderer
      * @param {number} aIndex - number of floats already in the attribute buffer
      * @param {number} iIndex - number of indices already in `indexBuffer`
      */
-    packInterleavedGeometry(element, attributeBuffer, indexBuffer, aIndex, iIndex)
+    packInterleavedGeometry(element: any, attributeBuffer: ViewableBuffer, indexBuffer: Uint16Array,
+                            aIndex: number, iIndex: number)
     {
         const {
             uint32View,
@@ -730,28 +764,28 @@ export class AbstractBatchRenderer extends ObjectRenderer
             indexBuffer[iIndex++] = packedVertices + indicies[i];
         }
     }
+
+    /**
+     * Pool of `BatchDrawCall` objects that `flush` used
+     * to create "batches" of the objects being rendered.
+     *
+     * These are never re-allocated again.
+     * Shared between all batch renderers because it can be only one "flush" working at the moment.
+     *
+     * @static
+     * @member {PIXI.BatchDrawCall[]}
+     */
+    static _drawCallPool: Array<BatchDrawCall> = [];
+
+    /**
+     * Pool of `BatchDrawCall` objects that `flush` used
+     * to create "batches" of the objects being rendered.
+     *
+     * These are never re-allocated again.
+     * Shared between all batch renderers because it can be only one "flush" working at the moment.
+     *
+     * @static
+     * @member {PIXI.BatchTextureArray[]}
+     */
+    static _textureArrayPool: Array<BatchTextureArray> = [];
 }
-
-/**
- * Pool of `BatchDrawCall` objects that `flush` used
- * to create "batches" of the objects being rendered.
- *
- * These are never re-allocated again.
- * Shared between all batch renderers because it can be only one "flush" working at the moment.
- *
- * @static
- * @member {PIXI.BatchDrawCall[]}
- */
-AbstractBatchRenderer._drawCallPool = [];
-
-/**
- * Pool of `BatchDrawCall` objects that `flush` used
- * to create "batches" of the objects being rendered.
- *
- * These are never re-allocated again.
- * Shared between all batch renderers because it can be only one "flush" working at the moment.
- *
- * @static
- * @member {PIXI.BatchTextureArray[]}
- */
-AbstractBatchRenderer._textureArrayPool = [];

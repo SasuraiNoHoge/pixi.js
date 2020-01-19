@@ -179,7 +179,7 @@ export class ImageResource extends BaseImageResource
             else
             {
                 source.onload = completed;
-                source.onerror = (event) => this.onError.run(event);
+                source.onerror = (event) => this.onError.emit(event);
             }
         });
 
