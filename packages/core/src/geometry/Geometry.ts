@@ -1,11 +1,11 @@
 import { Attribute } from './Attribute';
-import { Buffer } from './Buffer';
+import {Buffer, IArrayBuffer } from './Buffer';
 import { interleaveTypedArrays } from './utils/interleaveTypedArrays';
 import { getBufferType } from './utils/getBufferType';
 import { TYPES } from '@pixi/constants';
 import { Runner } from '@pixi/runner';
 
-const byteSizeMap = { 5126: 4, 5123: 2, 5121: 1 };
+const byteSizeMap: {[key: number]: number} = { 5126: 4, 5123: 2, 5121: 1 };
 let UID = 0;
 
 /* eslint-disable object-shorthand */
@@ -40,6 +40,15 @@ const map = {
  */
 export class Geometry
 {
+    buffers: Array<Buffer>;
+    indexBuffer: Buffer;
+    attributes: {[key: string]: Attribute};
+    glVertexArrayObjects: {[key: number]: {[key: string]: WebGLVertexArrayObject}};
+    id: number;
+    instanced: boolean;
+    instanceCount: number;
+    disposeRunner: Runner;
+    refCount: number;
     /**
      * @param {PIXI.Buffer[]} [buffers]  an array of buffers. optional.
      * @param {object} [attributes] of the geometry, optional structure of the attributes layout
@@ -71,7 +80,7 @@ export class Geometry
          */
         this.instanceCount = 1;
 
-        this.disposeRunner = new Runner('disposeGeometry', 2);
+        this.disposeRunner = new Runner('disposeGeometry');
 
         /**
          * Count of existing (not destroyed) meshes that reference this geometry
@@ -104,7 +113,7 @@ export class Geometry
         }
 
         // check if this is a buffer!
-        if (!buffer.data)
+        if (!(buffer instanceof Buffer))
         {
             // its an array!
             if (buffer instanceof Array)
@@ -149,7 +158,7 @@ export class Geometry
      * @param {String} id  the name of the attribute required
      * @return {PIXI.Attribute} the attribute requested.
      */
-    getAttribute(id)
+    getAttribute(id: string)
     {
         return this.attributes[id];
     }
@@ -160,7 +169,7 @@ export class Geometry
      * @param {String} id  the name of the buffer required
      * @return {PIXI.Buffer} the buffer requested.
      */
-    getBuffer(id)
+    getBuffer(id: string)
     {
         return this.buffers[this.getAttribute(id).buffer];
     }
@@ -173,9 +182,9 @@ export class Geometry
     * @param {PIXI.Buffer|number[]} [buffer] the buffer that holds the data of the index buffer. You can also provide an Array and a buffer will be created from it.
     * @return {PIXI.Geometry} returns self, useful for chaining.
     */
-    addIndex(buffer)
+    addIndex(buffer?: Buffer | IArrayBuffer | number[])
     {
-        if (!buffer.data)
+        if (!(buffer instanceof Buffer))
         {
             // its an array!
             if (buffer instanceof Array)
@@ -264,7 +273,7 @@ export class Geometry
             const attribute = this.attributes[i];
             const buffer = this.buffers[attribute.buffer];
 
-            return buffer.data.length / ((attribute.stride / 4) || attribute.size);
+            return (buffer.data as any).length / ((attribute.stride / 4) || attribute.size);
         }
 
         return 0;
@@ -275,7 +284,7 @@ export class Geometry
      */
     dispose()
     {
-        this.disposeRunner.run(this, false);
+        this.disposeRunner.emit(this, false);
     }
 
     /**
@@ -301,7 +310,7 @@ export class Geometry
 
         for (let i = 0; i < this.buffers.length; i++)
         {
-            geometry.buffers[i] = new Buffer(this.buffers[i].data.slice());
+            geometry.buffers[i] = new Buffer(this.buffers[i].data.slice(0));
         }
 
         for (const i in this.attributes)
@@ -335,7 +344,7 @@ export class Geometry
      * @param {PIXI.Geometry[]} geometries array of geometries to merge
      * @returns {PIXI.Geometry} shiny new geometry!
      */
-    static merge(geometries)
+    static merge(geometries: Array<Geometry>)
     {
         // todo add a geometry check!
         // also a size check.. cant be too big!]
@@ -343,7 +352,7 @@ export class Geometry
         const geometryOut = new Geometry();
 
         const arrays = [];
-        const sizes = [];
+        const sizes: Array<number> = [];
         const offsets = [];
 
         let geometry;

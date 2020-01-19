@@ -1,4 +1,6 @@
-export function getBufferType(array)
+import { ITypedArray } from '../Buffer';
+
+export function getBufferType(array: ITypedArray)
 {
     if (array.BYTES_PER_ELEMENT === 4)
     {

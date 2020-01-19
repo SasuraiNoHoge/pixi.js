@@ -1,6 +1,8 @@
 import { Geometry } from '../geometry/Geometry';
 import { Buffer } from '../geometry/Buffer';
 
+import { Rectangle } from '@pixi/math';
+
 /**
  * Helper class to create a quad with uvs like in v4
  *
@@ -10,6 +12,11 @@ import { Buffer } from '../geometry/Buffer';
  */
 export class QuadUv extends Geometry
 {
+    vertexBuffer: Buffer;
+    uvBuffer: Buffer;
+    vertices: Float32Array;
+    uvs: Float32Array;
+
     constructor()
     {
         super();
@@ -53,7 +60,7 @@ export class QuadUv extends Geometry
      * @param {PIXI.Rectangle} destinationFrame - the second rectangle
      * @return {PIXI.Quad} Returns itself.
      */
-    map(targetTextureFrame, destinationFrame)
+    map(targetTextureFrame: Rectangle, destinationFrame: Rectangle)
     {
         let x = 0; // destinationFrame.x / targetTextureFrame.width;
         let y = 0; // destinationFrame.y / targetTextureFrame.height;

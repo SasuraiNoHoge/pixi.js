@@ -1,5 +1,10 @@
 import { Renderer } from './Renderer';
+import { IRendererOptions } from './AbstractRenderer';
 
+export interface IRendererOptionsAuto extends IRendererOptions
+{
+    forceCanvas?: boolean;
+}
 /**
  * This helper function will automatically detect which renderer you should be using.
  * WebGL is the preferred renderer as it is a lot faster. If WebGL is not supported by
@@ -31,7 +36,7 @@ import { Renderer } from './Renderer';
  *  for devices with dual graphics card **webgl only**
  * @return {PIXI.Renderer|PIXI.CanvasRenderer} Returns WebGL renderer if available, otherwise CanvasRenderer
  */
-export function autoDetectRenderer(options)
+export function autoDetectRenderer(options: IRendererOptionsAuto)
 {
     return Renderer.create(options);
 }

@@ -1,3 +1,5 @@
+import { ITypedArray } from './Buffer';
+
 /**
  * Flexible wrapper around `ArrayBuffer` that also provides
  * typed array views on demand.
@@ -7,10 +9,21 @@
  */
 export class ViewableBuffer
 {
+    size: number;
+    rawBinaryData: ArrayBuffer;
+    uint32View: Uint32Array;
+    float32View: Float32Array;
+
+    _int8View: Int8Array;
+    _uint8View: Uint8Array;
+    _int16View: Int16Array;
+    _uint16View: Uint16Array;
+    _int32View: Int32Array;
+
     /**
      * @param {number} size - The size of the buffer in bytes.
      */
-    constructor(size)
+    constructor(size: number)
     {
         /**
          * Underlying `ArrayBuffer` that holds all the data
@@ -117,9 +130,9 @@ export class ViewableBuffer
      *    `uint16`, `int32`, `uint32`, and `float32`.
      * @return {object} typed array of given type
      */
-    view(type)
+    view(type: string): ITypedArray
     {
-        return this[`${type}View`];
+        return (this as any)[`${type}View`];
     }
 
     /**
@@ -138,7 +151,7 @@ export class ViewableBuffer
         this.float32View = null;
     }
 
-    static sizeOf(type)
+    static sizeOf(type: string)
     {
         switch (type)
         {

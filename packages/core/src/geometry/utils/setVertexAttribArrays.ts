@@ -6,7 +6,7 @@
  * @param state {*}
  * @private
  */
-export function setVertexAttribArrays(gl, attribs, state)
+export function setVertexAttribArrays(gl: WebGL2RenderingContext, attribs: any, state: any)
 {
     let i;
 
