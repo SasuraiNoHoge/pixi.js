@@ -1,3 +1,15 @@
+declare module '*.frag' {
+    const value: string;
+
+    export default value;
+}
+
+declare module '*.vert' {
+    const value: string;
+
+    export default value;
+}
+
 declare module '@pixi/settings';
 
 declare type InteractionTrackingData = any;
