@@ -1,3 +1,15 @@
+function booleanArray(size: number)
+{
+    const array = new Array(size);
+
+    for (let i = 0; i < array.length; i++)
+    {
+        array[i] = false;
+    }
+
+    return array;
+}
+
 /**
  * @method defaultValue
  * @memberof PIXI.glCore.shader
@@ -65,16 +77,4 @@ export function defaultValue(type: string, size: number): any
     }
 
     return null;
-}
-
-function booleanArray(size: number)
-{
-    const array = new Array(size);
-
-    for (let i = 0; i < array.length; i++)
-    {
-        array[i] = false;
-    }
-
-    return array;
 }

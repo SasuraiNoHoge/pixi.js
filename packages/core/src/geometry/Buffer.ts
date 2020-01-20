@@ -5,15 +5,23 @@ let UID = 0;
 /* eslint-disable max-len */
 
 /**
- * Can be Float32Array, UInt32Array, any typed arrays
+ * Marks places in PixiJS where you can pass Float32Array, UInt32Array, any typed arrays, and ArrayBuffer
+ *
+ * Same as ArrayBuffer in typescript lib, defined here just for documentation
  */
-export interface IArrayBuffer extends ArrayBuffer
+export interface IArrayBuffer
 {
-
+    readonly byteLength: number;
+    slice(begin: number, end?: number): IArrayBuffer;
 }
 
 /**
+ * PixiJS classes use this type instead of ArrayBuffer and typed arrays
+ * to support expressions like `geometry.buffers[0].data[0] = position.x`.
+ *
  * Gives access to indexing and `length` field
+ *
+ * @popelyshev: If data is actually ArrayBuffer and throws Exception on indexing - its user problem :)
  */
 export interface ITypedArray extends IArrayBuffer
 {

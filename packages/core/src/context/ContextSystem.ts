@@ -18,6 +18,7 @@ export class ContextSystem extends System
     CONTEXT_UID: number;
     gl: WebGL2RenderingContext;
     webGLVersion: number;
+    /* eslint-disable @typescript-eslint/camelcase */
     extensions:
     {
         drawBuffers?: WEBGL_draw_buffers;
@@ -32,6 +33,7 @@ export class ContextSystem extends System
         textureHalfFloatLinear?: OES_texture_half_float_linear;
         colorBufferFloat?: WEBGL_color_buffer_float;
     };
+    /* eslint-enable @typescript-eslint/camelcase */
 
     /**
      * @param {PIXI.Renderer} renderer - The renderer this System works for.

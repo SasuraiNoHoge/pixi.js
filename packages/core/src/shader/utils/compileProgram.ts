@@ -1,4 +1,21 @@
 /**
+ * @private
+ * @param gl {WebGLRenderingContext} The current WebGL context {WebGLProgram}
+ * @param type {Number} the type, can be either VERTEX_SHADER or FRAGMENT_SHADER
+ * @param src {string} The vertex shader source as an array of strings.
+ * @return {WebGLShader} the shader
+ */
+function compileShader(gl: WebGL2RenderingContext, type: number, src: string)
+{
+    const shader = gl.createShader(type);
+
+    gl.shaderSource(shader, src);
+    gl.compileShader(shader);
+
+    return shader;
+}
+
+/**
  * @method compileProgram
  * @private
  * @memberof PIXI.glCore.shader
@@ -64,21 +81,4 @@ export function compileProgram(gl: WebGL2RenderingContext, vertexSrc: string, fr
     gl.deleteShader(glFragShader);
 
     return program;
-}
-
-/**
- * @private
- * @param gl {WebGLRenderingContext} The current WebGL context {WebGLProgram}
- * @param type {Number} the type, can be either VERTEX_SHADER or FRAGMENT_SHADER
- * @param src {string} The vertex shader source as an array of strings.
- * @return {WebGLShader} the shader
- */
-function compileShader(gl: WebGL2RenderingContext, type: number, src: string)
-{
-    const shader = gl.createShader(type);
-
-    gl.shaderSource(shader, src);
-    gl.compileShader(shader);
-
-    return shader;
 }

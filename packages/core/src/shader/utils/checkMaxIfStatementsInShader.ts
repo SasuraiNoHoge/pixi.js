@@ -7,6 +7,26 @@ const fragTemplate = [
     '}',
 ].join('\n');
 
+function generateIfTestSrc(maxIfs: number)
+{
+    let src = '';
+
+    for (let i = 0; i < maxIfs; ++i)
+    {
+        if (i > 0)
+        {
+            src += '\nelse ';
+        }
+
+        if (i < maxIfs - 1)
+        {
+            src += `if(test == ${i}.0){}`;
+        }
+    }
+
+    return src;
+}
+
 export function checkMaxIfStatementsInShader(maxIfs: number, gl: WebGL2RenderingContext)
 {
     if (maxIfs === 0)
@@ -35,24 +55,4 @@ export function checkMaxIfStatementsInShader(maxIfs: number, gl: WebGL2Rendering
     }
 
     return maxIfs;
-}
-
-function generateIfTestSrc(maxIfs: number)
-{
-    let src = '';
-
-    for (let i = 0; i < maxIfs; ++i)
-    {
-        if (i > 0)
-        {
-            src += '\nelse ';
-        }
-
-        if (i < maxIfs - 1)
-        {
-            src += `if(test == ${i}.0){}`;
-        }
-    }
-
-    return src;
 }
